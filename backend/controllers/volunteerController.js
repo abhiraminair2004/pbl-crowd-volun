@@ -327,4 +327,49 @@ exports.getMyVolunteerProfile = async (req, res) => {
         console.error('Error getting volunteer profile:', error);
         res.status(500).json({ error: error.message });
     }
+};
+
+// Register a new volunteer (no auth required)
+exports.registerVolunteer = async (req, res) => {
+    try {
+        const { fullName, email, phone, location, skills, interests, availability, experience } = req.body;
+
+        // Validate required fields
+        if (!fullName || !email || !phone || !location || !skills || !availability) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                missingFields: {
+                    fullName: !fullName,
+                    email: !email,
+                    phone: !phone,
+                    location: !location,
+                    skills: !skills,
+                    availability: !availability
+                }
+            });
+        }
+
+        // Create volunteer profile
+        const volunteer = new Volunteer({
+            fullName,
+            email,
+            phone,
+            location,
+            skills,
+            interests: interests || [],
+            availability,
+            experience: experience || '',
+            status: 'pending'
+        });
+
+        await volunteer.save();
+
+        res.status(201).json({
+            message: 'Volunteer registration successful',
+            volunteer
+        });
+    } catch (error) {
+        console.error('Error registering volunteer:', error);
+        res.status(500).json({ error: 'Error registering volunteer' });
+    }
 }; 

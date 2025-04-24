@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -86,17 +85,7 @@ const VolunteerRegister = () => {
     try {
       setIsSubmitting(true);
       
-      // In a development environment without a backend, simulate API call
-      if (process.env.NODE_ENV !== 'production') {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        console.log('Volunteer Registration Data:', formData);
-        toast.success("Registration successful! We'll be in touch soon.");
-        navigate("/volunteer/thank-you");
-        return;
-      }
-      
-      // If backend is available, make the actual API call
+      // Make the API call
       await registerVolunteer(formData);
       toast.success("Registration successful! We'll be in touch soon.");
       navigate("/volunteer/thank-you");

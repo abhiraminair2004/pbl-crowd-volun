@@ -24,4 +24,7 @@ router.delete('/profile', auth, volunteerController.deleteVolunteer);
 router.get('/admin/all', auth, volunteerController.getAllVolunteers);
 router.get('/admin/:id', auth, volunteerController.getVolunteerById);
 
+// Volunteer registration route (no auth required)
+router.post('/register', volunteerController.registerVolunteer);
+
 module.exports = router; 

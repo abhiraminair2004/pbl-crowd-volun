@@ -90,7 +90,11 @@ export const resetPassword = async (token: string, newPassword: string) => {
 // Volunteer APIs
 export const registerVolunteer = async (volunteerData: any) => {
   try {
-    const response = await api.post('/volunteer/register', volunteerData);
+    const response = await api.post('/volunteers/register', volunteerData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     return response.data;
   } catch (error) {
     console.error('Error registering volunteer:', error);

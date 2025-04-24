@@ -1,14 +1,9 @@
 const mongoose = require('mongoose');
 
 const volunteerSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    name: {
+    fullName: {
         type: String,
-        required: [true, 'Name is required'],
+        required: [true, 'Full name is required'],
         trim: true
     },
     email: {
@@ -23,19 +18,25 @@ const volunteerSchema = new mongoose.Schema({
         required: [true, 'Phone number is required'],
         trim: true
     },
-    skills: [{
+    location: {
         type: String,
+        required: [true, 'Location is required'],
         trim: true
-    }],
-    availability: {
+    },
+    skills: {
         type: String,
-        enum: ['weekdays', 'weekends', 'both'],
-        required: true
+        required: [true, 'Skills are required'],
+        trim: true
     },
     interests: [{
         type: String,
         trim: true
     }],
+    availability: {
+        type: String,
+        required: [true, 'Availability is required'],
+        trim: true
+    },
     experience: {
         type: String,
         trim: true
