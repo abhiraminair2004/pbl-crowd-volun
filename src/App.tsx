@@ -19,6 +19,7 @@ import TermsConditions from "./pages/TermsConditions";
 import AboutUs from "./pages/AboutUs";
 import StartCampaign from "./pages/crowdfunding/StartCampaign";
 import AllCampaigns from "./pages/crowdfunding/AllCampaigns";
+import CampaignDetails from "./pages/crowdfunding/CampaignDetails";
 
 const queryClient = new QueryClient();
 
@@ -31,29 +32,30 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Index />} />
-            
+
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            
+
             {/* Information Routes */}
             <Route path="/terms" element={<TermsConditions />} />
             <Route path="/about" element={<AboutUs />} />
-            
+
             {/* Volunteer Routes */}
             <Route path="/volunteer" element={<VolunteerPage />} />
             <Route path="/volunteer/register" element={<VolunteerRegister />} />
             <Route path="/volunteer/opportunity/:id" element={<VolunteerOpportunity />} />
             <Route path="/volunteer/thank-you" element={<VolunteerThankYou />} />
-            
+
             {/* Crowdfunding Routes */}
             <Route path="/crowdfunding" element={<CrowdfundingPage />} />
+            <Route path="/crowdfunding/:id" element={<CampaignDetails />} />
             <Route path="/crowdfunding/donate/:id" element={<DonationForm />} />
             <Route path="/crowdfunding/thank-you" element={<DonationThankYou />} />
             <Route path="/crowdfunding/start" element={<StartCampaign />} />
             <Route path="/crowdfunding/all" element={<AllCampaigns />} />
-            
+
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>

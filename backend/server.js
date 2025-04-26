@@ -1,13 +1,13 @@
+require('dotenv').config();
+console.log('PRIVATE_KEY:', process.env.PRIVATE_KEY);
+console.log('TEST_VAR:', process.env.TEST_VAR);
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const volunteerRoutes = require('./routes/volunteerRoutes');
-const crowdfundingRoutes = require('./routes/crowdfundingRoutes');
-
-// Load environment variables
-dotenv.config();
+const crowdfundingRoutes = require('./routes/crowdfunding');
 
 // Initialize Express app
 const app = express();
@@ -40,9 +40,9 @@ app.use('/api/crowdfunding', crowdfundingRoutes);
 
 // Database connection
 console.log('Connecting to MongoDB...');
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/crowdfunding')
     .then(() => {
-        console.log('MongoDB connected successfully');
+        console.log('Connected to MongoDB');
         console.log('Database name:', mongoose.connection.name);
         console.log('Database host:', mongoose.connection.host);
         console.log('Database port:', mongoose.connection.port);
@@ -87,4 +87,4 @@ process.on('SIGINT', async () => {
         console.error('Error closing MongoDB connection:', err);
         process.exit(1);
     }
-}); 
+});

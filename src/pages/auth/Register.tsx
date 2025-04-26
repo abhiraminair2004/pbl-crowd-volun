@@ -69,14 +69,14 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setIsSubmitting(true);
-      
+
       // In development, simulate successful registration
       if (process.env.NODE_ENV !== 'production') {
         await new Promise(resolve => setTimeout(resolve, 1500));
@@ -84,7 +84,7 @@ const Register = () => {
         navigate("/");
         return;
       }
-      
+
       // For production: Add actual registration API call here
       // const response = await registerUser(formData);
       // toast.success("Registration successful! Welcome to VeridaX.");
@@ -100,7 +100,7 @@ const Register = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <div className="flex-1 bg-cream py-12">
         <div className="container max-w-md mx-auto px-4">
           <Card>
@@ -125,7 +125,7 @@ const Register = () => {
                     <p className="text-sm text-red-500">{errors.name}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -140,7 +140,7 @@ const Register = () => {
                     <p className="text-sm text-red-500">{errors.email}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <Input
@@ -155,7 +155,7 @@ const Register = () => {
                     <p className="text-sm text-red-500">{errors.password}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
                   <Input
@@ -170,12 +170,12 @@ const Register = () => {
                     <p className="text-sm text-red-500">{errors.confirmPassword}</p>
                   )}
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="agreeToTerms"
                     checked={formData.agreeToTerms}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setFormData({
                         ...formData,
                         agreeToTerms: checked as boolean,
@@ -195,7 +195,7 @@ const Register = () => {
                 {errors.agreeToTerms && (
                   <p className="text-sm text-red-500">{errors.agreeToTerms}</p>
                 )}
-                
+
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? "Creating Account..." : "Sign Up"}
                 </Button>
@@ -212,7 +212,7 @@ const Register = () => {
           </Card>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

@@ -1,22 +1,48 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
+import axios from "axios";
 
 const StartCampaign = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [goal, setGoal] = useState("");
+  const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Thank you for your interest! Campaign submission is coming soon.");
+    setLoading(true);
+    try {
+      // Convert INR to ETH if needed, or just send as is if backend expects ETH
+      // Here, we assume 1 ETH = 200,000 INR for demo, adjust as needed
+      const ethGoal = (parseFloat(goal) / 200000).toString();
+      const response = await axios.post("http://localhost:5000/api/crowdfunding/campaigns", {
+        title,
+        description,
+        goal: ethGoal,
+        duration: 86400, // 1 day in seconds
+      });
+      toast.success("Campaign created! Tx: " + response.data.txHash);
+      setTitle("");
+      setCategory("");
+      setGoal("");
+      setDescription("");
+    } catch (err: any) {
+      toast.error("Error: " + (err.response?.data?.error || err.message));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <div className="flex-1 bg-cream py-12">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
@@ -25,7 +51,7 @@ const StartCampaign = () => {
               Create a campaign to raise funds for a meaningful cause. All campaigns are verified to ensure credibility.
             </p>
           </div>
-          
+
           <div className="max-w-3xl mx-auto">
             <Card className="bg-white shadow-sm">
               <CardContent className="pt-6">
@@ -37,6 +63,8 @@ const StartCampaign = () => {
                     <input
                       type="text"
                       id="title"
+                      value={title}
+                      onChange={e => setTitle(e.target.value)}
                       className="w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
                       placeholder="Give your campaign a clear, descriptive title"
                       required
@@ -49,6 +77,8 @@ const StartCampaign = () => {
                     </label>
                     <select
                       id="category"
+                      value={category}
+                      onChange={e => setCategory(e.target.value)}
                       className="w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
                       required
                     >
@@ -70,6 +100,8 @@ const StartCampaign = () => {
                     <input
                       type="number"
                       id="goal"
+                      value={goal}
+                      onChange={e => setGoal(e.target.value)}
                       className="w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
                       placeholder="Enter amount in Rupees"
                       min="1000"
@@ -83,6 +115,8 @@ const StartCampaign = () => {
                     </label>
                     <textarea
                       id="description"
+                      value={description}
+                      onChange={e => setDescription(e.target.value)}
                       rows={5}
                       className="w-full rounded-md border border-gray-300 p-3 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
                       placeholder="Describe your campaign in detail. Be specific about how the funds will be used."
@@ -94,14 +128,14 @@ const StartCampaign = () => {
                     <Button variant="outline" asChild>
                       <Link to="/crowdfunding">Cancel</Link>
                     </Button>
-                    <Button type="submit" className="bg-primary text-cream hover:bg-primary-dark">
-                      Submit Campaign
+                    <Button type="submit" className="bg-primary text-cream hover:bg-primary-dark" disabled={loading}>
+                      {loading ? "Submitting..." : "Submit Campaign"}
                     </Button>
                   </div>
                 </form>
               </CardContent>
             </Card>
-            
+
             <div className="mt-8 bg-white p-6 rounded-lg shadow-sm">
               <h2 className="text-xl font-bold text-primary-dark mb-4">What happens after you submit?</h2>
               <ul className="space-y-3">
@@ -134,7 +168,7 @@ const StartCampaign = () => {
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

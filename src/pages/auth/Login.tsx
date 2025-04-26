@@ -59,14 +59,14 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setIsSubmitting(true);
-      
+
       // In development, simulate successful login
       if (process.env.NODE_ENV !== 'production') {
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -74,7 +74,7 @@ const Login = () => {
         navigate("/");
         return;
       }
-      
+
       // For production: Add actual login API call here
       // const response = await loginUser(formData);
       // toast.success("Login successful!");
@@ -90,7 +90,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <div className="flex-1 bg-cream py-12">
         <div className="container max-w-md mx-auto px-4">
           <Card>
@@ -116,12 +116,12 @@ const Login = () => {
                     <p className="text-sm text-red-500">{errors.email}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label htmlFor="password">Password</Label>
-                    <Link 
-                      to="/forgot-password" 
+                    <Link
+                      to="/forgot-password"
                       className="text-sm text-primary hover:underline"
                     >
                       Forgot Password?
@@ -139,7 +139,7 @@ const Login = () => {
                     <p className="text-sm text-red-500">{errors.password}</p>
                   )}
                 </div>
-                
+
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? "Logging in..." : "Log In"}
                 </Button>
@@ -156,7 +156,7 @@ const Login = () => {
           </Card>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
