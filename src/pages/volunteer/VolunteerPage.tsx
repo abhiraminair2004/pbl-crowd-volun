@@ -83,7 +83,7 @@ const VolunteerPage = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   size="lg" 
-                  className="bg-secondary hover:bg-secondary-dark text-primary-dark"
+                  className="bg-secondary text-primary-dark hover:bg-secondary-dark hover:text-primary-dark font-semibold shadow-md hover:shadow-lg transition-all duration-200"
                   onClick={scrollToOpportunities}
                 >
                   Find Opportunities
@@ -92,7 +92,7 @@ const VolunteerPage = () => {
                   asChild
                   variant="outline"
                   size="lg"
-                  className="border-cream text-cream hover:bg-cream hover:text-primary-dark"
+                  className="border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   <Link to="/volunteer/register">Register as Volunteer</Link>
                 </Button>
@@ -100,8 +100,8 @@ const VolunteerPage = () => {
             </div>
             <div className="relative h-[300px] md:h-[400px] rounded-lg overflow-hidden">
               <img
-                src="/placeholder.svg?height=400&width=600"
-                alt="Volunteers working together"
+                src="/images/volunteer-teaching.jpg"
+                alt="UNICEF volunteers engaging with children in an educational activity, showing people wearing blue uniforms and headphones working with kids"
                 className="object-cover h-full w-full"
               />
             </div>
@@ -174,7 +174,7 @@ const VolunteerPage = () => {
                 />
               </div>
 
-              <Button variant="outline" className="border-primary text-primary flex items-center gap-2">
+              <Button variant="outline" className="border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2">
                 <Filter className="h-4 w-4" />
                 Filter
               </Button>
@@ -213,7 +213,7 @@ const VolunteerPage = () => {
                     </div>
                   </div>
 
-                  <Button asChild className="w-full mt-2">
+                  <Button asChild className="w-full mt-2 bg-primary text-white hover:bg-primary-dark hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200">
                     <Link to={`/volunteer/opportunity/${index}`}>
                       View Details
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -225,7 +225,7 @@ const VolunteerPage = () => {
           </div>
 
           <div className="mt-8 text-center">
-            <Button asChild variant="outline" size="lg" className="border-primary text-primary">
+            <Button asChild variant="outline" size="lg" className="border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200">
               <Link to="/volunteer/all">View All Opportunities</Link>
             </Button>
           </div>
@@ -337,14 +337,14 @@ const VolunteerPage = () => {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button asChild size="lg" className="bg-secondary hover:bg-secondary-dark text-primary-dark">
+              <Button asChild size="lg" className="bg-secondary text-primary-dark hover:bg-secondary-dark hover:text-primary-dark font-semibold shadow-md hover:shadow-lg transition-all duration-200">
                 <Link to="/volunteer/register">Register as Volunteer</Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
                 size="lg"
-                className="border-cream text-cream hover:bg-cream hover:text-primary-dark"
+                className="border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200"
               >
                 <Link to="/volunteer/organizations">For Organizations</Link>
               </Button>

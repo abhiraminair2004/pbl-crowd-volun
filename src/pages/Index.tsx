@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -20,10 +19,10 @@ const Index = () => {
             Join VeridaX to support verified causes through crowdfunding and volunteering opportunities.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-secondary text-primary-dark hover:bg-secondary-dark">
+            <Button asChild size="lg" className="bg-secondary text-primary-dark hover:bg-secondary-dark hover:text-primary-dark font-semibold shadow-md hover:shadow-lg transition-all duration-200">
               <Link to="/crowdfunding">Donate Now</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-cream text-cream hover:bg-cream/10">
+            <Button asChild variant="outline" size="lg" className="border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200">
               <Link to="/volunteer">Volunteer</Link>
             </Button>
           </div>

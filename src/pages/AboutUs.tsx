@@ -10,21 +10,22 @@ const AboutUs = () => {
       name: "Abhirami Nair",
       role: "Co-Founder",
       bio: "Passionate leader driving innovative solutions for social impact.",
-      image: "https://source.unsplash.com/random/300x300/?portrait&woman=1"
+      image: "/images/abhirami-nair.jpg"
     },
     {
       name: "Aditi Bansal",
       role: "Co-Founder",
       bio: "Strategic thinker committed to creating meaningful change globally.",
-      image: "https://source.unsplash.com/random/300x300/?portrait&woman=2"
+      image: "/images/aditi-bansal.jpg"
     },
     {
       name: "Aparna Nair",
       role: "Co-Founder",
       bio: "Visionary entrepreneur focused on empowering communities.",
-      image: "https://source.unsplash.com/random/300x300/?portrait&woman=3"
+      image: "/images/aparna-nair.jpg"
     }
   ];
+
 
   return (
     <div className="min-h-screen flex flex-col">

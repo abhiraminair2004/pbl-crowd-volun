@@ -68,11 +68,12 @@ const CrowdfundingPage = () => {
               </div>
             </div>
             <div className="relative h-[300px] md:h-[400px] rounded-lg overflow-hidden">
-              <img
-                src="/placeholder.svg?height=400&width=600"
-                alt="People supporting a cause"
+            <img
+                src="/images/community-hands.jpg"
+                alt="Diverse group of people joining hands together in unity and support"
                 className="object-cover h-full w-full"
               />
+
             </div>
           </div>
         </div>
