@@ -6,7 +6,7 @@ const authController = {
         try {
             console.log('=== REGISTRATION START ===');
             console.log('Request received with body:', JSON.stringify(req.body, null, 2));
-            
+
             const { name, email, password } = req.body;
 
             // Validate required fields
@@ -47,7 +47,7 @@ const authController = {
                 email: user.email,
                 password: user.password ? 'present' : 'missing'
             });
-            
+
             // Save user and log result
             const savedUser = await user.save();
             console.log('User saved successfully:', {
@@ -56,17 +56,9 @@ const authController = {
                 email: savedUser.email
             });
 
-            // Generate auth token
-            console.log('Generating auth token');
-            const token = await user.generateAuthToken();
-            console.log('Token generated successfully');
-
-            // Set token in response header
-            res.header('Authorization', `Bearer ${token}`);
-
+            // No token generation
             console.log('=== REGISTRATION SUCCESS ===');
             res.status(201).json({
-                token,
                 user: user.toJSON()
             });
         } catch (error) {
@@ -76,7 +68,7 @@ const authController = {
                 message: error.message,
                 stack: error.stack
             });
-            
+
             // Handle validation errors
             if (error.name === 'ValidationError') {
                 console.error('Validation errors:', error.errors);
@@ -88,10 +80,10 @@ const authController = {
                     }, {})
                 });
             }
-            
-            res.status(500).json({ 
+
+            res.status(500).json({
                 message: 'Server error',
-                error: error.message 
+                error: error.message
             });
         }
     },
@@ -101,7 +93,7 @@ const authController = {
             console.log('Login request received:', {
                 email: req.body.email
             });
-            
+
             const { email, password } = req.body;
 
             // Validate required fields
@@ -128,7 +120,7 @@ const authController = {
                     email: user.email,
                     lockUntil: user.lockUntil
                 });
-                
+
                 const remainingTime = Math.ceil((user.lockUntil - new Date()) / 1000 / 60);
                 return res.status(403).json({
                     message: `Account is locked. Please try again in ${remainingTime} minutes.`
@@ -144,19 +136,12 @@ const authController = {
                 });
             }
 
-            // Generate auth token
-            const token = await user.generateAuthToken();
-
-            // Set token in response header
-            res.header('Authorization', `Bearer ${token}`);
-
+            // No token generation
             console.log('Login successful:', {
                 userId: user._id,
                 email: user.email
             });
-            
             res.json({
-                token,
                 user: user.toJSON()
             });
         } catch (error) {
@@ -164,10 +149,10 @@ const authController = {
                 message: error.message,
                 stack: error.stack
             });
-            
-            res.status(500).json({ 
+
+            res.status(500).json({
                 message: 'Server error',
-                error: error.message 
+                error: error.message
             });
         }
     },
@@ -178,11 +163,11 @@ const authController = {
                 userId: req.user._id,
                 email: req.user.email
             });
-            
+
             // Remove the current token
             req.user.tokens = req.user.tokens.filter(token => token.token !== req.token);
             await req.user.save();
-            
+
             console.log('User logged out successfully');
             res.json({ message: 'Logged out successfully' });
         } catch (error) {
@@ -190,7 +175,7 @@ const authController = {
                 message: error.message,
                 stack: error.stack
             });
-            
+
             res.status(500).json({ message: 'Server error' });
         }
     },
@@ -201,17 +186,17 @@ const authController = {
                 userId: req.user._id,
                 email: req.user.email
             });
-            
+
             res.json(req.user.toJSON());
         } catch (error) {
             console.error('Get current user error:', {
                 message: error.message,
                 stack: error.stack
             });
-            
+
             res.status(500).json({ message: 'Server error' });
         }
     }
 };
 
-module.exports = authController; 
+module.exports = authController;

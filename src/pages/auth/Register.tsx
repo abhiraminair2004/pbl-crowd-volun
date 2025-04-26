@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,11 +9,16 @@ import { toast } from "sonner";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { z } from "zod";
+import { useAuth } from '@/context/AuthContext';
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
 
 const registerSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  password: z.string()
+    .min(6, { message: "Password must be at least 6 characters" })
+    .regex(passwordRegex, { message: "Password must contain at least one uppercase letter, one lowercase letter, and one number" }),
   confirmPassword: z.string(),
   agreeToTerms: z.boolean().refine(val => val === true, { message: "You must agree to the terms and conditions" })
 }).refine(data => data.password === data.confirmPassword, {
@@ -23,7 +27,6 @@ const registerSchema = z.object({
 });
 
 const Register = () => {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -33,6 +36,8 @@ const Register = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -77,21 +82,18 @@ const Register = () => {
     try {
       setIsSubmitting(true);
 
-      // In development, simulate successful registration
-      if (process.env.NODE_ENV !== 'production') {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        toast.success("Registration successful! Welcome to VeridaX.");
-        navigate("/");
-        return;
-      }
-
-      // For production: Add actual registration API call here
-      // const response = await registerUser(formData);
-      // toast.success("Registration successful! Welcome to VeridaX.");
-      // navigate("/");
-    } catch (error) {
+      await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+      toast.success("Registration successful! Please log in.");
+      navigate("/login");
+    } catch (error: any) {
       console.error("Registration error:", error);
-      toast.error("Registration failed. Please try again later.");
+      // Show backend error message if available
+      const msg = error?.response?.data?.message || "Registration failed. Please try again later.";
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -151,6 +153,9 @@ const Register = () => {
                     onChange={handleChange}
                     className={errors.password ? "border-red-500" : ""}
                   />
+                  <p className="text-xs text-gray-500">
+                    Password must contain at least one uppercase letter, one lowercase letter, and one number.
+                  </p>
                   {errors.password && (
                     <p className="text-sm text-red-500">{errors.password}</p>
                   )}

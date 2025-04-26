@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import VolunteerPage from "./pages/volunteer/VolunteerPage";
@@ -29,37 +30,39 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <Router>
-          <Routes>
-            <Route path="/" element={<Index />} />
+        <AuthProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Index />} />
 
-            {/* Auth Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+              {/* Auth Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
 
-            {/* Information Routes */}
-            <Route path="/terms" element={<TermsConditions />} />
-            <Route path="/about" element={<AboutUs />} />
+              {/* Information Routes */}
+              <Route path="/terms" element={<TermsConditions />} />
+              <Route path="/about" element={<AboutUs />} />
 
-            {/* Volunteer Routes */}
-            <Route path="/volunteer" element={<VolunteerPage />} />
-            <Route path="/volunteer/register" element={<VolunteerRegister />} />
-            <Route path="/volunteer/opportunity/:id" element={<VolunteerOpportunity />} />
-            <Route path="/volunteer/thank-you" element={<VolunteerThankYou />} />
+              {/* Volunteer Routes */}
+              <Route path="/volunteer" element={<VolunteerPage />} />
+              <Route path="/volunteer/register" element={<VolunteerRegister />} />
+              <Route path="/volunteer/opportunity/:id" element={<VolunteerOpportunity />} />
+              <Route path="/volunteer/thank-you" element={<VolunteerThankYou />} />
 
-            {/* Crowdfunding Routes */}
-            <Route path="/crowdfunding" element={<CrowdfundingPage />} />
-            <Route path="/crowdfunding/:id" element={<CampaignDetails />} />
-            <Route path="/crowdfunding/donate/:id" element={<DonationForm />} />
-            <Route path="/crowdfunding/thank-you" element={<DonationThankYou />} />
-            <Route path="/crowdfunding/start" element={<StartCampaign />} />
-            <Route path="/crowdfunding/all" element={<AllCampaigns />} />
+              {/* Crowdfunding Routes */}
+              <Route path="/crowdfunding" element={<CrowdfundingPage />} />
+              <Route path="/crowdfunding/:id" element={<CampaignDetails />} />
+              <Route path="/crowdfunding/donate/:id" element={<DonationForm />} />
+              <Route path="/crowdfunding/thank-you" element={<DonationThankYou />} />
+              <Route path="/crowdfunding/start" element={<StartCampaign />} />
+              <Route path="/crowdfunding/all" element={<AllCampaigns />} />
 
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Router>
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
