@@ -6,6 +6,12 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import axios from "axios";
 
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
+
 const AllCampaigns = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [onChainCampaigns, setOnChainCampaigns] = useState<any[]>([]);
@@ -24,6 +30,9 @@ const AllCampaigns = () => {
   const [country, setCountry] = useState("");
   const [donateLoading, setDonateLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // TODO: Replace this with actual wallet/account logic (e.g., from MetaMask or backend)
+  const currentUserAddress = (window.ethereum && window.ethereum.selectedAddress) ? window.ethereum.selectedAddress.toLowerCase() : "";
 
   useEffect(() => {
     async function fetchOnChainCampaigns() {
@@ -187,7 +196,11 @@ const AllCampaigns = () => {
         setOnChainCampaigns(prev => prev.filter(c => c.id !== campaign.id));
       }
     } catch (err: any) {
-      alert('Failed to delete campaign: ' + (err.response?.data?.error || err.message));
+      if (err?.response?.data?.error?.includes("Only creator can delete") || err?.message?.includes("Only creator can delete")) {
+        alert("You can only delete campaigns you created.");
+      } else {
+        alert('Failed to delete campaign: ' + (err.response?.data?.error || err.message));
+      }
     } finally {
       setDeletingId(null);
     }
@@ -262,7 +275,7 @@ const AllCampaigns = () => {
                       Urgent
                     </div>
                   )}
-                  {/* Delete Button */}
+                  {/* Delete Button: Always show for testing/demo */}
                   <button
                     className="absolute top-3 right-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 z-20"
                     title="Delete Campaign"
