@@ -5,12 +5,16 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import axios from "axios";
+import { toast } from "sonner";
 
 declare global {
   interface Window {
     ethereum?: any;
   }
 }
+
+const ETH_TO_INR = 1000;
+const toINR = (eth: number) => eth * ETH_TO_INR;
 
 const AllCampaigns = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -46,115 +50,7 @@ const AllCampaigns = () => {
     fetchOnChainCampaigns();
   }, []);
 
-  const campaigns = [
-    {
-      title: "Medical Treatment for Ravi",
-      category: "Medical",
-      description: "Help 8-year-old Ravi get the critical heart surgery he needs to live a normal life.",
-      raised: 350000,
-      goal: 500000,
-      daysLeft: 15,
-      supporters: 128,
-      image: "/placeholder.svg?height=200&width=300",
-      urgent: true,
-    },
-    {
-      title: "College Scholarship Fund",
-      category: "Education",
-      description: "Support bright students from underprivileged backgrounds to pursue higher education.",
-      raised: 250000,
-      goal: 1000000,
-      daysLeft: 45,
-      supporters: 87,
-      image: "/placeholder.svg?height=200&width=300",
-      urgent: false,
-    },
-    {
-      title: "Sports Equipment for Rural School",
-      category: "Sports",
-      description: "Help provide sports equipment to a rural school to encourage physical fitness and team building.",
-      raised: 75000,
-      goal: 150000,
-      daysLeft: 30,
-      supporters: 42,
-      image: "/placeholder.svg?height=200&width=300",
-      urgent: false,
-    },
-    {
-      title: "Emergency Flood Relief",
-      category: "Disaster Relief",
-      description: "Support families affected by recent floods with essential supplies and temporary shelter.",
-      raised: 420000,
-      goal: 600000,
-      daysLeft: 7,
-      supporters: 215,
-      image: "/placeholder.svg?height=200&width=300",
-      urgent: true,
-    },
-    {
-      title: "Community Art Center",
-      category: "Arts & Culture",
-      description: "Help establish a community art center to provide creative outlets for children and adults.",
-      raised: 180000,
-      goal: 400000,
-      daysLeft: 60,
-      supporters: 65,
-      image: "/placeholder.svg?height=200&width=300",
-      urgent: false,
-    },
-    {
-      title: "Clean Water Project",
-      category: "Environment",
-      description: "Support the installation of water purification systems in villages without access to clean water.",
-      raised: 320000,
-      goal: 500000,
-      daysLeft: 25,
-      supporters: 110,
-      image: "/placeholder.svg?height=200&width=300",
-      urgent: false,
-    },
-    {
-      title: "Elderly Care Facility",
-      category: "Healthcare",
-      description: "Support the construction of a new wing at an elderly care facility to accommodate more residents.",
-      raised: 580000,
-      goal: 800000,
-      daysLeft: 35,
-      supporters: 145,
-      image: "/placeholder.svg?height=200&width=300",
-      urgent: false,
-    },
-    {
-      title: "Wildlife Conservation",
-      category: "Environment",
-      description: "Help protect endangered species and their habitats through conservation efforts.",
-      raised: 210000,
-      goal: 450000,
-      daysLeft: 40,
-      supporters: 95,
-      image: "/placeholder.svg?height=200&width=300",
-      urgent: false,
-    },
-    {
-      title: "Women's Empowerment Program",
-      category: "Social",
-      description: "Support skill development and employment opportunities for underprivileged women.",
-      raised: 290000,
-      goal: 400000,
-      daysLeft: 20,
-      supporters: 130,
-      image: "/placeholder.svg?height=200&width=300",
-      urgent: false,
-    },
-  ];
-
-  // Merge on-chain campaigns with a tag
-  const allCampaigns = [
-    ...onChainCampaigns.map(c => ({ ...c, isOnChain: true })),
-    ...campaigns.map(c => ({ ...c, isOnChain: false })),
-  ];
-
-  const filteredCampaigns = allCampaigns.filter(campaign =>
+  const filteredCampaigns = onChainCampaigns.filter(campaign =>
     campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (campaign.category || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     campaign.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -166,6 +62,19 @@ const AllCampaigns = () => {
     setTimeout(() => {
       setDonateLoading(false);
       setShowDonate({ open: false, id: null, title: "" });
+
+      // Simulate donation amount (convert INR to ETH before storing)
+      const amountINR = parseFloat(donateAmount) || 0;
+      const amountETH = amountINR / ETH_TO_INR;
+      if (showDonate.id != null && amountETH > 0) {
+        const key = `dummy-donations-campaign-${showDonate.id}`;
+        let prev = { amount: 0, donors: 0 };
+        try { prev = JSON.parse(localStorage.getItem(key) || '{}'); } catch {}
+        const newAmount = prev.amount + amountETH;
+        const newDonors = prev.donors + 1;
+        localStorage.setItem(key, JSON.stringify({ raised: newAmount, supporters: newDonors }));
+      }
+
       setDonateAmount("");
       setDonorFirstName("");
       setDonorLastName("");
@@ -178,7 +87,7 @@ const AllCampaigns = () => {
       setCountry("");
       setCurrency("INR");
       setPaymentMethod("card");
-      alert("Thank you for your donation!");
+      toast.success("Thank you for your (simulated) donation!");
     }, 1200);
   };
 
@@ -186,20 +95,17 @@ const AllCampaigns = () => {
     if (!window.confirm(`Are you sure you want to delete the campaign "${campaign.title}"?`)) return;
     setDeletingId(campaign.id);
     try {
-      if (campaign.isOnChain) {
-        await axios.delete(`http://localhost:5000/api/crowdfunding/campaigns/${campaign.id}`);
-        setOnChainCampaigns(prev => prev.filter(c => c.id !== campaign.id));
-        alert('On-chain campaign deleted!');
-      } else {
-        // For demo campaigns, just remove from UI
-        alert('Demo campaign deleted (UI only).');
-        setOnChainCampaigns(prev => prev.filter(c => c.id !== campaign.id));
-      }
+      // Always treat as on-chain campaign
+      await axios.delete(`http://localhost:5000/api/crowdfunding/campaigns/${campaign.id}`);
+      // Re-fetch campaigns from backend to ensure UI is in sync
+      const res = await axios.get("http://localhost:5000/api/crowdfunding/campaigns");
+      setOnChainCampaigns(res.data);
+      toast.success('On-chain campaign deleted!');
     } catch (err: any) {
       if (err?.response?.data?.error?.includes("Only creator can delete") || err?.message?.includes("Only creator can delete")) {
-        alert("You can only delete campaigns you created.");
+        toast.error("You can only delete campaigns you created.");
       } else {
-        alert('Failed to delete campaign: ' + (err.response?.data?.error || err.message));
+        toast.error('Failed to delete campaign: ' + (err.response?.data?.error || err.message));
       }
     } finally {
       setDeletingId(null);
@@ -253,80 +159,96 @@ const AllCampaigns = () => {
       <section className="py-12 bg-white">
         <div className="container px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCampaigns.map((campaign, index) => (
-              <div
-                key={index}
-                className="border border-primary/10 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow relative"
-              >
-                <div className="relative h-48">
-                  {/* Category Badge */}
-                  <div className="absolute top-3 left-3 bg-secondary text-primary-dark text-xs font-medium px-2 py-1 rounded z-10">
-                    {campaign.category || (campaign.isOnChain ? "On-Chain" : "")}
+            {filteredCampaigns.map((campaign, index) => {
+              const key = `dummy-donations-campaign-${campaign.id}`;
+              let dummy = { amount: 0, donors: 0 };
+              try { dummy = JSON.parse(localStorage.getItem(key) || '{}'); } catch {}
+              const raisedETH = (campaign.raised || 0) + (dummy.amount || 0);
+              const raisedINR = toINR(raisedETH);
+              const goalINR = toINR(campaign.goal || campaign.targetAmount || 0);
+              const progress = goalINR > 0 ? ((raisedINR / goalINR) * 100) : 0;
+              return (
+                <div
+                  key={index}
+                  className="border border-primary/10 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow relative"
+                >
+                  <div className="relative h-48">
+                    {/* Category Badge */}
+                    <div className="absolute top-3 left-3 bg-secondary text-primary-dark text-xs font-medium px-2 py-1 rounded z-10">
+                      {campaign.category || (campaign.isOnChain ? "On-Chain" : "")}
+                    </div>
+                    {/* On-Chain Badge */}
+                    {campaign.isOnChain && (
+                      <div className="absolute top-10 left-3 bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded-full z-10">
+                        On-Chain
+                      </div>
+                    )}
+                    {/* Urgent Badge */}
+                    {campaign.urgent && (
+                      <div className="absolute top-16 left-3 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full z-10">
+                        Urgent
+                      </div>
+                    )}
+                    {/* Closed Badge */}
+                    {(campaign.completed || campaign.status === 'closed' || Number(campaign.goal) === 0) && (
+                      <div className="absolute top-3 right-3 bg-gray-400 text-white text-xs font-medium px-2 py-1 rounded z-20">
+                        Closed
+                      </div>
+                    )}
+                    {/* Delete Button: Always show for testing/demo */}
+                    <button
+                      className="absolute top-3 right-10 bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 z-20"
+                      title="Delete Campaign"
+                      onClick={() => handleDelete(campaign)}
+                      disabled={deletingId === campaign.id}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                    <img
+                      src={campaign.image || "/placeholder.svg?height=200&width=300"}
+                      alt={campaign.title}
+                      className="object-cover w-full h-full"
+                    />
                   </div>
-                  {/* On-Chain Badge */}
-                  {campaign.isOnChain && (
-                    <div className="absolute top-10 left-3 bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded-full z-10">
-                      On-Chain
+
+                  <div className="p-4 space-y-3">
+                    <h3 className="font-bold text-lg text-primary-dark">{campaign.title}</h3>
+                    <p className="text-primary-dark/70 text-sm line-clamp-2">{campaign.description}</p>
+
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="bg-secondary h-2.5 rounded-full"
+                        style={{ width: `${Math.min(100, progress)}%` }}
+                      ></div>
                     </div>
-                  )}
-                  {/* Urgent Badge */}
-                  {campaign.urgent && (
-                    <div className="absolute top-16 left-3 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full z-10">
-                      Urgent
+
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium">₹{raisedINR.toLocaleString()}</span>
+                      <span className="text-primary-dark/60">of ₹{goalINR.toLocaleString()}</span>
                     </div>
-                  )}
-                  {/* Delete Button: Always show for testing/demo */}
-                  <button
-                    className="absolute top-3 right-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 z-20"
-                    title="Delete Campaign"
-                    onClick={() => handleDelete(campaign)}
-                    disabled={deletingId === campaign.id}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                  <img
-                    src={campaign.image || "/placeholder.svg?height=200&width=300"}
-                    alt={campaign.title}
-                    className="object-cover w-full h-full"
-                  />
+
+                    <div className="flex flex-col gap-2 text-sm pt-2">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-secondary" />
+                        <span>{campaign.daysLeft ? `${campaign.daysLeft} days left` : ""}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-secondary" />
+                        <span>{((campaign.supporters || 0) + (dummy.donors || 0))} supporters</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      className="w-full mt-2 bg-secondary hover:bg-secondary-dark text-primary-dark"
+                      onClick={() => setShowDonate({ open: true, id: campaign.id, title: campaign.title })}
+                      disabled={campaign.completed || campaign.status === 'closed' || Number(campaign.goal) === 0}
+                    >
+                      {campaign.completed || campaign.status === 'closed' || Number(campaign.goal) === 0 ? 'Closed' : 'Donate Now'} <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-
-                <div className="p-4 space-y-3">
-                  <h3 className="font-bold text-lg text-primary-dark">{campaign.title}</h3>
-                  <p className="text-primary-dark/70 text-sm line-clamp-2">{campaign.description}</p>
-
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-secondary h-2.5 rounded-full"
-                      style={{ width: `${Math.min(100, ((campaign.raised || 0) / (campaign.goal || campaign.targetAmount || 1)) * 100)}%` }}
-                    ></div>
-                  </div>
-
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">₹{(campaign.raised || 0).toLocaleString()}</span>
-                    <span className="text-primary-dark/60">of ₹{(campaign.goal || campaign.targetAmount || 0).toLocaleString()}</span>
-                  </div>
-
-                  <div className="flex flex-col gap-2 text-sm pt-2">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-secondary" />
-                      <span>{campaign.daysLeft ? `${campaign.daysLeft} days left` : ""}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-secondary" />
-                      <span>{campaign.supporters ? `${campaign.supporters} supporters` : ""}</span>
-                    </div>
-                  </div>
-
-                  <Button
-                    className="w-full mt-2 bg-secondary hover:bg-secondary-dark text-primary-dark"
-                    onClick={() => setShowDonate({ open: true, id: campaign.id, title: campaign.title })}
-                  >
-                    Donate Now <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Professional Donate Dialog */}

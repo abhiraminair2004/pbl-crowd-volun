@@ -18,16 +18,17 @@ const StartCampaign = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Convert INR to ETH if needed, or just send as is if backend expects ETH
-      // Here, we assume 1 ETH = 200,000 INR for demo, adjust as needed
+      // Convert INR to ETH (adjust the rate as needed)
       const ethGoal = (parseFloat(goal) / 200000).toString();
-      const response = await axios.post("http://localhost:5000/api/crowdfunding/campaigns", {
+      const duration = 30 * 24 * 60 * 60; // 30 days in seconds
+
+      await axios.post("http://localhost:5000/api/crowdfunding/campaigns", {
         title,
         description,
         goal: ethGoal,
-        duration: 86400, // 1 day in seconds
+        duration,
       });
-      toast.success("Campaign created! Tx: " + response.data.txHash);
+      toast.success("Campaign created on blockchain successfully!");
       setTitle("");
       setCategory("");
       setGoal("");

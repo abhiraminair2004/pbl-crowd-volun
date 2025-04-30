@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,10 @@ import { toast } from "sonner";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { makeDonation } from "@/services/api";
+import axios from "axios";
+
+const ETH_TO_INR = 1000;
+const toINR = (eth: number) => eth * ETH_TO_INR;
 
 const DonationForm = () => {
   const { id } = useParams();
@@ -31,19 +34,36 @@ const DonationForm = () => {
     agreeToTerms: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const localKey = `dummy-donations-campaign-${id}`;
+  const initialDummy = (() => {
+    try {
+      const data = JSON.parse(localStorage.getItem(localKey) || '{}');
+      return {
+        raised: data.raised || 0,
+        supporters: data.supporters || 0,
+      };
+    } catch {
+      return { raised: 0, supporters: 0 };
+    }
+  })();
+  const [dummyRaised, setDummyRaised] = useState(initialDummy.raised);
+  const [dummySupporters, setDummySupporters] = useState(initialDummy.supporters);
+  const [campaignDetails, setCampaignDetails] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // This would typically come from an API request based on the campaign ID
-  const campaignDetails = {
-    title: "Medical Treatment for Ravi",
-    category: "Medical",
-    description: "Help 8-year-old Ravi get the critical heart surgery he needs to live a normal life.",
-    raised: 350000,
-    goal: 500000,
-    daysLeft: 15,
-    supporters: 128,
-    image: "/placeholder.svg?height=200&width=300",
-    urgent: true,
-  };
+  useEffect(() => {
+    async function fetchCampaign() {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/crowdfunding/campaigns/${id}`);
+        setCampaignDetails(res.data.details || res.data);
+      } catch (err) {
+        toast.error('Failed to load campaign details');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCampaign();
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -86,7 +106,7 @@ const DonationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.agreeToTerms) {
       toast.error("Please agree to the terms and conditions");
       return;
@@ -94,7 +114,7 @@ const DonationForm = () => {
 
     try {
       setIsSubmitting(true);
-      
+
       // Prepare donation data
       const donationData = {
         campaignId: id,
@@ -105,17 +125,24 @@ const DonationForm = () => {
         message: formData.message,
         isAnonymous: formData.isAnonymous,
       };
-      
+
       // In a development environment without a backend, simulate API call
       if (process.env.NODE_ENV !== 'production') {
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 1500));
-        console.log('Donation Data:', donationData);
+        // Convert INR to ETH before storing
+        const donatedAmountINR = parseFloat(formData.amount === "custom" ? formData.customAmount : formData.amount) || 0;
+        const donatedAmountETH = donatedAmountINR / ETH_TO_INR;
+        const newRaised = dummyRaised + donatedAmountETH;
+        const newSupporters = dummySupporters + 1;
+        setDummyRaised(newRaised);
+        setDummySupporters(newSupporters);
+        localStorage.setItem(localKey, JSON.stringify({ raised: newRaised, supporters: newSupporters }));
         toast.success("Donation successful! Thank you for your generosity.");
-        navigate("/crowdfunding/thank-you");
+        setIsSubmitting(false);
         return;
       }
-      
+
       // If backend is available, make the actual API call
       await makeDonation(donationData);
       toast.success("Donation successful! Thank you for your generosity.");
@@ -128,10 +155,34 @@ const DonationForm = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div>Loading campaign details...</div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!campaignDetails) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div>Campaign not found.</div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <div className="flex-1 bg-cream py-12">
         <div className="container max-w-4xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -153,30 +204,30 @@ const DonationForm = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <h3 className="font-bold text-lg text-primary-dark">{campaignDetails.title}</h3>
                   <p className="text-sm text-gray-600">{campaignDetails.description}</p>
-                  
+
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
                     <div
                       className="bg-secondary h-2.5 rounded-full"
                       style={{ width: `${Math.min(100, (campaignDetails.raised / campaignDetails.goal) * 100)}%` }}
                     ></div>
                   </div>
-                  
+
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium">₹{campaignDetails.raised.toLocaleString()}</span>
+                    <span className="font-medium">₹{(toINR(Number(campaignDetails.raised) + dummyRaised)).toLocaleString()}</span>
                     <span className="text-gray-600">of ₹{campaignDetails.goal.toLocaleString()}</span>
                   </div>
-                  
+
                   <div className="text-sm flex justify-between pt-2">
-                    <span>{campaignDetails.supporters} supporters</span>
+                    <span>{campaignDetails.supporters + dummySupporters} supporters</span>
                     <span>{campaignDetails.daysLeft} days left</span>
                   </div>
                 </CardContent>
               </Card>
             </div>
-            
+
             <div className="md:col-span-2">
               <Card>
                 <CardHeader>
@@ -198,7 +249,7 @@ const DonationForm = () => {
                           required
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <Input
@@ -211,7 +262,7 @@ const DonationForm = () => {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label>Donation Amount</Label>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -227,7 +278,7 @@ const DonationForm = () => {
                           </Button>
                         ))}
                       </div>
-                      
+
                       {/* Fixed: Added RadioGroup around the custom amount RadioGroupItem */}
                       <RadioGroup className="mt-3" value={formData.amount} onValueChange={handleAmountChange}>
                         <div className="flex items-center space-x-2">
@@ -252,7 +303,7 @@ const DonationForm = () => {
                         </div>
                       </RadioGroup>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label>Payment Method</Label>
                       <RadioGroup
@@ -270,7 +321,7 @@ const DonationForm = () => {
                         </div>
                       </RadioGroup>
                     </div>
-                    
+
                     {formData.paymentMethod === "upi" && (
                       <div className="space-y-2">
                         <Label htmlFor="upiId">UPI ID</Label>
@@ -284,7 +335,7 @@ const DonationForm = () => {
                         />
                       </div>
                     )}
-                    
+
                     {formData.paymentMethod === "card" && (
                       <div className="space-y-4">
                         <div className="space-y-2">
@@ -298,7 +349,7 @@ const DonationForm = () => {
                             required
                           />
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="cardExpiry">Expiry Date</Label>
@@ -311,7 +362,7 @@ const DonationForm = () => {
                               required
                             />
                           </div>
-                          
+
                           <div className="space-y-2">
                             <Label htmlFor="cardCvv">CVV</Label>
                             <Input
@@ -327,7 +378,7 @@ const DonationForm = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="message">Message (Optional)</Label>
                       <Textarea
@@ -339,12 +390,12 @@ const DonationForm = () => {
                         rows={3}
                       />
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="isAnonymous"
                         checked={formData.isAnonymous}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           handleCheckboxChange("isAnonymous", checked as boolean)
                         }
                       />
@@ -355,12 +406,12 @@ const DonationForm = () => {
                         Make my donation anonymous
                       </label>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="agreeToTerms"
                         checked={formData.agreeToTerms}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           handleCheckboxChange("agreeToTerms", checked as boolean)
                         }
                         required
@@ -372,7 +423,7 @@ const DonationForm = () => {
                         I agree to the terms and conditions
                       </label>
                     </div>
-                    
+
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
                       {isSubmitting ? "Processing..." : "Complete Donation"}
                     </Button>
@@ -383,7 +434,7 @@ const DonationForm = () => {
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );
