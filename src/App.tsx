@@ -21,6 +21,7 @@ import AboutUs from "./pages/AboutUs";
 import StartCampaign from "./pages/crowdfunding/StartCampaign";
 import AllCampaigns from "./pages/crowdfunding/AllCampaigns";
 import CampaignDetails from "./pages/crowdfunding/CampaignDetails";
+import VolunteerAllOpportunities from "./pages/volunteer/VolunteerAllOpportunities";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ function App() {
               <Route path="/volunteer/register" element={<VolunteerRegister />} />
               <Route path="/volunteer/opportunity/:id" element={<VolunteerOpportunity />} />
               <Route path="/volunteer/thank-you" element={<VolunteerThankYou />} />
+              <Route path="/volunteer/all" element={<VolunteerAllOpportunities />} />
 
               {/* Crowdfunding Routes */}
               <Route path="/crowdfunding" element={<CrowdfundingPage />} />

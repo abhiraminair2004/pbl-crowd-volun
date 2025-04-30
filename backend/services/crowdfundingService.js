@@ -7,7 +7,7 @@ class CrowdfundingService {
         if (!process.env.PRIVATE_KEY || process.env.PRIVATE_KEY.length !== 64) {
             throw new Error('Invalid PRIVATE_KEY in .env. It must be a 64-character hex string with no 0x prefix.');
         }
-        this.provider = new ethers.providers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
+        this.provider = new ethers.JsonRpcProvider(process.env.ETHEREUM_RPC_URL);
         this.wallet = new ethers.Wallet(process.env.PRIVATE_KEY, this.provider);
         this.contract = new ethers.Contract(
             process.env.CONTRACT_ADDRESS,

@@ -1,68 +1,35 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Clock, Users, TrendingUp, Search, Filter, ArrowRight, MapPin, Calendar, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
+import { getCampaigns } from "@/services/api";
 
 const VolunteerPage = () => {
   const opportunitiesRef = useRef<HTMLElement>(null);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const scrollToOpportunities = (e: React.MouseEvent) => {
     e.preventDefault();
     opportunitiesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const volunteerOpportunities = [
-    {
-      title: "Beach Cleanup Drive",
-      organization: "EcoWarriors",
-      location: "Mumbai, Maharashtra",
-      date: "March 15, 2025",
-      category: "Environment",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      title: "Teaching Assistant for Underprivileged Children",
-      organization: "Education For All",
-      location: "Delhi, NCR",
-      date: "Ongoing",
-      category: "Education",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      title: "Medical Camp Volunteer",
-      organization: "HealthFirst Foundation",
-      location: "Bangalore, Karnataka",
-      date: "April 5-6, 2025",
-      category: "Healthcare",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      title: "Elderly Care Assistant",
-      organization: "Silver Care",
-      location: "Chennai, Tamil Nadu",
-      date: "Weekends",
-      category: "Elderly Care",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      title: "Animal Shelter Helper",
-      organization: "Paws & Claws",
-      location: "Pune, Maharashtra",
-      date: "Flexible",
-      category: "Animal Welfare",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      title: "Disaster Relief Volunteer",
-      organization: "Rapid Response Team",
-      location: "Hyderabad, Telangana",
-      date: "On-call",
-      category: "Disaster Relief",
-      image: "/placeholder.svg?height=200&width=300",
-    },
-  ];
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const data = await getCampaigns();
+        setCampaigns(data);
+      } catch (err) {
+        setError("Failed to load campaigns");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCampaigns();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -81,8 +48,8 @@ const VolunteerPage = () => {
                 that showcases your impact.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-secondary text-primary-dark hover:bg-secondary-dark hover:text-primary-dark font-semibold shadow-md hover:shadow-lg transition-all duration-200"
                   onClick={scrollToOpportunities}
                 >
@@ -163,7 +130,6 @@ const VolunteerPage = () => {
               <h2 className="text-3xl font-bold tracking-tighter text-primary-dark">Volunteer Opportunities</h2>
               <p className="text-primary-dark/70 mt-2">Browse and apply for opportunities that match your interests</p>
             </div>
-
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary-dark/50" />
@@ -173,57 +139,69 @@ const VolunteerPage = () => {
                   className="pl-10 pr-4 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 w-full sm:w-[200px]"
                 />
               </div>
-
               <Button variant="outline" className="border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2">
                 <Filter className="h-4 w-4" />
                 Filter
               </Button>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {volunteerOpportunities.map((opportunity, index) => (
-              <div
-                key={index}
-                className="border border-primary/10 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="relative h-48">
-                  <img
-                    src={opportunity.image}
-                    alt={opportunity.title}
-                    className="object-cover w-full h-full"
-                  />
-                  <div className="absolute top-3 right-3 bg-secondary text-primary-dark text-xs font-medium px-2 py-1 rounded">
-                    {opportunity.category}
-                  </div>
-                </div>
-
-                <div className="p-4 space-y-3">
-                  <h3 className="font-bold text-lg text-primary-dark">{opportunity.title}</h3>
-                  <p className="text-primary-dark/70">{opportunity.organization}</p>
-
-                  <div className="flex flex-col gap-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      <span>{opportunity.location}</span>
+          {loading ? (
+            <div className="text-center py-10">Loading opportunities...</div>
+          ) : error ? (
+            <div className="text-center text-red-500 py-10">{error}</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {campaigns.map((campaign, index) => {
+                const campaignId = campaign._id || campaign.id;
+                return (
+                  <div
+                    key={campaignId || index}
+                    className="border border-primary/10 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow relative"
+                  >
+                    <div className="relative h-48">
+                      <img
+                        src={campaign.image || "/placeholder.svg?height=200&width=300"}
+                        alt={campaign.title}
+                        className="object-cover w-full h-full"
+                      />
+                      <div className="absolute top-3 right-3 bg-secondary text-primary-dark text-xs font-medium px-2 py-1 rounded">
+                        {campaign.category}
+                      </div>
+                      {(campaign.status === 'completed' || campaign.status === 'cancelled') && (
+                        <div className="absolute bottom-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow">Closed</div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      <span>{opportunity.date}</span>
+                    <div className="p-4 space-y-3">
+                      <h3 className="font-bold text-lg text-primary-dark">{campaign.title}</h3>
+                      <p className="text-primary-dark/70">{campaign.creator?.name || campaign.organization || 'Unknown Organization'}</p>
+                      <div className="flex flex-col gap-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          <span>{campaign.location || 'N/A'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-primary" />
+                          <span>{campaign.endDate ? new Date(campaign.endDate).toLocaleDateString() : 'Ongoing'}</span>
+                        </div>
+                      </div>
+                      {campaignId ? (
+                        <Button asChild className="w-full mt-2 bg-primary text-white hover:bg-primary-dark hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200">
+                          <Link to={`/volunteer/opportunity/${campaignId}`}>
+                            View Details
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button disabled className="w-full mt-2">
+                          Details Unavailable
+                        </Button>
+                      )}
                     </div>
                   </div>
-
-                  <Button asChild className="w-full mt-2 bg-primary text-white hover:bg-primary-dark hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200">
-                    <Link to={`/volunteer/opportunity/${index}`}>
-                      View Details
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-
+                );
+              })}
+            </div>
+          )}
           <div className="mt-8 text-center">
             <Button asChild variant="outline" size="lg" className="border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200">
               <Link to="/volunteer/all">View All Opportunities</Link>
