@@ -7,6 +7,9 @@ import Footer from "@/components/footer";
 import { MapPin, Calendar, Users, ArrowLeft, Heart } from "lucide-react";
 import axios from "axios";
 
+const ETH_TO_INR = 1000;
+const toINR = (eth: number) => eth * ETH_TO_INR;
+
 const CampaignDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [campaign, setCampaign] = useState<any>(null);
@@ -39,6 +42,19 @@ const CampaignDetails = () => {
   console.log("Loading state:", loading);
   console.log("Error state:", error);
 
+  // Add helper to get dummy donation data
+  const getDummyDonation = (id: string | undefined) => {
+    try {
+      const data = JSON.parse(localStorage.getItem(`dummy-donations-campaign-${id}`) || '{}');
+      return {
+        amount: data.raised || 0,
+        donors: data.supporters || 0,
+      };
+    } catch {
+      return { amount: 0, donors: 0 };
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -68,6 +84,13 @@ const CampaignDetails = () => {
       </div>
     );
   }
+
+  // Get dummy donation data for this campaign
+  const dummy = getDummyDonation(id);
+  const raisedINR = toINR(Number(campaign.raised) + dummy.amount);
+  const goalINR = toINR(Number(campaign.goal) || 0);
+  const progress = goalINR > 0 ? ((raisedINR / goalINR) * 100) : 0;
+  const isClosed = campaign.completed || campaign.status === 'closed' || Number(campaign.goal) === 0;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -119,22 +142,24 @@ const CampaignDetails = () => {
                     <div className="flex justify-between text-sm">
                       <span className="text-primary-dark/70">Progress</span>
                       <span className="font-medium">
-                        {campaign.goal && Number(campaign.goal) > 0
-                          ? ((Number(campaign.raised) / Number(campaign.goal)) * 100).toFixed(1) + "%"
-                          : "0%"}
+                        {goalINR > 0 ? progress.toFixed(1) + "%" : "0%"}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className="bg-secondary h-2.5 rounded-full"
                         style={{
-                          width: `${Math.min(100, (Number(campaign.raised) / Number(campaign.goal)) * 100)}%`,
+                          width: `${Math.min(100, progress)}%`,
                         }}
                       ></div>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="font-medium">{campaign.raised || 0} ETH raised</span>
-                      <span className="text-primary-dark/70">Goal: {campaign.goal || 0} ETH</span>
+                      <span className="font-medium">₹{raisedINR.toLocaleString()} raised</span>
+                      <span className="text-primary-dark/70">Goal: ₹{goalINR.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-2 pt-2">
+                      <Users className="h-5 w-5 text-secondary" />
+                      <span className="text-primary-dark/70">{((campaign.supporters || 0) + dummy.donors)} supporters</span>
                     </div>
                   </div>
                 </CardContent>
@@ -147,12 +172,25 @@ const CampaignDetails = () => {
                   <CardTitle className="text-xl font-bold text-primary-dark">Support This Campaign</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button asChild className="w-full bg-primary text-cream hover:bg-primary-dark">
-                    <Link to={`/crowdfunding/donate/${id}`}>
-                      Donate Now
+                  {isClosed ? (
+                    <Button
+                      className="w-full bg-primary text-cream"
+                      disabled
+                    >
+                      Closed
                       <Heart className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
+                    </Button>
+                  ) : (
+                    <Button
+                      asChild
+                      className="w-full bg-primary text-cream hover:bg-primary-dark"
+                    >
+                      <Link to={`/crowdfunding/donate/${id}`}>
+                        Donate Now
+                        <Heart className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             </div>
