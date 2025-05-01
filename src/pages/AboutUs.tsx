@@ -113,19 +113,25 @@ const AboutUs = () => {
 
           {/* Impact */}
           <div className="bg-white p-8 rounded-lg shadow-sm mb-16">
-            <h2 className="text-3xl font-bold text-primary-dark mb-6 text-center">Our Impact</h2>
+            <h2 className="text-3xl font-bold text-primary-dark mb-6 text-center">Connect With Us</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               <div>
-                <div className="text-4xl font-bold text-primary mb-2">50+</div>
-                <p className="text-gray-700 font-medium">Countries Served</p>
+                <div className="text-4xl font-bold text-primary mb-2">Abhirami Nair</div>
+              <a href="https://www.linkedin.com/in/abhirami-nair-233018289/">
+                <p className="text-gray-700 font-medium">https://www.linkedin.com/in/abhirami-nair-233018289/</p>
+              </a>
               </div>
               <div>
-                <div className="text-4xl font-bold text-primary mb-2">100K+</div>
-                <p className="text-gray-700 font-medium">Volunteer Placements</p>
+                <div className="text-4xl font-bold text-primary mb-2">Aditi Bansal</div>
+                <a href="https://www.linkedin.com/in/aditi-bansal22/">
+                  <p className="text-gray-700 font-medium">https://www.linkedin.com/in/aditi-bansal22/</p>
+                </a>
               </div>
               <div>
-                <div className="text-4xl font-bold text-primary mb-2">$25M+</div>
-                <p className="text-gray-700 font-medium">Funds Raised</p>
+                <div className="text-4xl font-bold text-primary mb-2">Aparna Nair</div>
+                <a href="https://www.linkedin.com/in/aparna-nair-9b7bb6285/">
+                  <p className="text-gray-700 font-medium">https://www.linkedin.com/in/aparna-nair-9b7bb6285/</p>
+                </a>
               </div>
             </div>
           </div>

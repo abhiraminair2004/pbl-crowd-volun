@@ -33,7 +33,7 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-xl font-bold">VeridaX</h3>
             <p className="text-cream/80">
-              Connecting generous hearts with meaningful causes since 2023.
+              Connecting generous hearts with meaningful causes.
             </p>
           </div>
 
@@ -68,7 +68,7 @@ const Footer = () => {
             <ul className="space-y-2">
               <li className="text-cream/80">support@veridax.com</li>
               <li className="text-cream/80">+91 1234567890</li>
-              <li className="text-cream/80">New Delhi, India</li>
+              <li className="text-cream/80">Pune, India</li>
             </ul>
           </div>
 
@@ -84,7 +84,7 @@ const Footer = () => {
                 className="px-4 py-2 rounded text-primary-dark focus:outline-none"
                 disabled={isSubmitting}
               />
-              <button 
+              <button
                 type="submit"
                 disabled={isSubmitting}
                 className="bg-secondary text-primary-dark px-4 py-2 rounded font-medium hover:bg-secondary-dark transition-colors disabled:opacity-50"
@@ -95,7 +95,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-cream/20 mt-12 pt-8 text-center text-cream/70">
-          <p>© 2023 VeridaX. All rights reserved.</p>
+          <p>© VeridaX. All rights reserved.</p>
         </div>
       </div>
     </footer>
