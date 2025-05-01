@@ -36,67 +36,62 @@ api.interceptors.response.use(function (response) {
   return Promise.reject(error);
 });
 
-// Auth APIs
-export const registerUser = async (userData: any) => {
-  try {
-    const response = await api.post('/auth/register', userData);
-    if (response.data.token) {
-      localStorage.setItem('auth_token', response.data.token);
-    }
-    return response.data;
-  } catch (error) {
-    console.error('Error registering user:', error);
-    throw error;
-  }
-};
-
-export const loginUser = async (credentials: any) => {
-  try {
-    const response = await api.post('/auth/login', credentials);
-    if (response.data.token) {
-      localStorage.setItem('auth_token', response.data.token);
-    }
-    return response.data;
-  } catch (error) {
-    console.error('Error logging in:', error);
-    throw error;
-  }
-};
-
-export const logoutUser = () => {
-  localStorage.removeItem('auth_token');
-};
-
-export const requestPasswordReset = async (email: string) => {
-  try {
-    const response = await api.post('/auth/forgot-password', { email });
-    return response.data;
-  } catch (error) {
-    console.error('Error requesting password reset:', error);
-    throw error;
-  }
-};
-
-export const resetPassword = async (token: string, newPassword: string) => {
-  try {
-    const response = await api.post('/auth/reset-password', { token, newPassword });
-    return response.data;
-  } catch (error) {
-    console.error('Error resetting password:', error);
-    throw error;
-  }
-};
+interface VolunteerData {
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
+  skills: string;
+  interests: string[];
+  availability: string;
+  experience?: string;
+  agreeToTerms: boolean;
+}
 
 // Volunteer APIs
-export const registerVolunteer = async (volunteerData: any) => {
+export const registerVolunteer = async (volunteerData: VolunteerData) => {
   try {
-    const response = await api.post('/volunteers/register', volunteerData, {
-      headers: {
-        'Content-Type': 'application/json'
+    // Clean the data before sending
+    const cleanedData = {
+      fullName: volunteerData.fullName.trim(),
+      email: volunteerData.email.trim().toLowerCase(), // Normalize email
+      phone: volunteerData.phone.replace(/\s+/g, '').replace(/[^\d+]/g, ''),
+      location: volunteerData.location.trim(),
+      skills: volunteerData.skills,
+      interests: volunteerData.interests,
+      availability: volunteerData.availability,
+      experience: volunteerData.experience?.trim() || '',
+      status: 'pending'
+    };
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanedData.email)) {
+      throw new Error('Invalid email format');
+    }
+
+    try {
+      const response = await api.post('/volunteers/register', cleanedData);
+      return response.data;
+    } catch (error: any) {
+      // Handle specific MongoDB duplicate key error
+      if (error.response?.data?.code === 11000 ||
+          (error.response?.data?.error && error.response?.data?.error.includes('duplicate key'))) {
+        throw new Error('A volunteer with this email already exists. Please use a different email address.');
       }
-    });
-    return response.data;
-  } catch (error) {
+
+      // Handle validation errors from backend
+      if (error.response?.data?.errors) {
+        const errorMessages = Object.entries(error.response.data.errors)
+          .map(([field, message]) => `${field}: ${message}`)
+          .join(', ');
+        throw new Error(`Validation failed: ${errorMessages}`);
+      }
+
+      // Handle other errors
+      throw error;
+    }
+  } catch (error: any) {
     console.error('Error registering volunteer:', error);
     throw error;
   }
@@ -298,6 +293,57 @@ export const uploadFile = async (chatId: string, formData: FormData) => {
     return response.data;
   } catch (error) {
     console.error('Error uploading file:', error);
+    throw error;
+  }
+};
+
+// Auth APIs
+export const registerUser = async (userData: any) => {
+  try {
+    const response = await api.post('/auth/register', userData);
+    if (response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error registering user:', error);
+    throw error;
+  }
+};
+
+export const loginUser = async (credentials: any) => {
+  try {
+    const response = await api.post('/auth/login', credentials);
+    if (response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error logging in:', error);
+    throw error;
+  }
+};
+
+export const logoutUser = () => {
+  localStorage.removeItem('auth_token');
+};
+
+export const requestPasswordReset = async (email: string) => {
+  try {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  } catch (error) {
+    console.error('Error requesting password reset:', error);
+    throw error;
+  }
+};
+
+export const resetPassword = async (token: string, newPassword: string) => {
+  try {
+    const response = await api.post('/auth/reset-password', { token, newPassword });
+    return response.data;
+  } catch (error) {
+    console.error('Error resetting password:', error);
     throw error;
   }
 };

@@ -88,9 +88,17 @@ const VolunteerRegister = () => {
       await registerVolunteer(formData);
       toast.success("Registration successful! We'll be in touch soon.");
       navigate("/volunteer/thank-you");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error registering:", error);
-      toast.error("Registration failed. Please try again later.");
+
+      // Handle specific error messages
+      if (error.message.includes('email already exists')) {
+        toast.error("This email is already registered. Please use a different email address or login if you already have an account.");
+      } else if (error.message.includes('Validation failed')) {
+        toast.error(error.message);
+      } else {
+        toast.error("Registration failed. Please try again later.");
+      }
     } finally {
       setIsSubmitting(false);
     }

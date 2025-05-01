@@ -1,9 +1,28 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/footer";
+import { requireAuth } from "@/lib/auth";
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  const handleDonateClick = () => {
+    if (requireAuth("make a donation")) {
+      navigate("/crowdfunding");
+    } else {
+      navigate("/login");
+    }
+  };
+
+  const handleVolunteerClick = () => {
+    if (requireAuth("register as a volunteer")) {
+      navigate("/volunteer/register");
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
@@ -16,11 +35,17 @@ const Index = () => {
             Join VeridaX to support verified causes through crowdfunding and volunteering opportunities.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-secondary text-primary-dark hover:bg-secondary-dark hover:text-primary-dark font-semibold shadow-md hover:shadow-lg transition-all duration-200">
-              <Link to="/crowdfunding">Donate Now</Link>
+            <Button
+              onClick={handleDonateClick}
+              className="bg-secondary text-primary-dark hover:bg-secondary-dark hover:text-primary-dark font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              Donate Now
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-2 border-primary text-primary-dark hover:bg-primary hover:text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200">
-              <Link to="/volunteer">Volunteer</Link>
+            <Button
+              onClick={handleVolunteerClick}
+              className="bg-white text-primary hover:bg-white/90 px-8 py-3"
+            >
+              Volunteer
             </Button>
           </div>
         </div>
