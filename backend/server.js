@@ -23,16 +23,20 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "http://localhost:3000",
-        methods: ["GET", "POST"]
+        origin: ["http://localhost:3000", "http://localhost:8080"],
+        methods: ["GET", "POST"],
+        credentials: true,
+        allowedHeaders: ["my-custom-header"],
+        transports: ['polling', 'websocket']
     }
 });
 
 // Middleware
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+    origin: ["http://localhost:3000", "http://localhost:8080"],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

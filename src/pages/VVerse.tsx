@@ -185,15 +185,29 @@ const VVerse = () => {
 
     try {
       const response = await sendMessage(selectedChat._id, newMessage);
-      setMessages(prev => [...prev, response]);
-      setNewMessage('');
+
+      // Add message without duplicating
+      setMessages(prev => {
+        const isDuplicate = prev.some(msg =>
+          msg.content === response.content &&
+          Math.abs(new Date(msg.timestamp).getTime() - new Date(response.timestamp).getTime()) < 1000
+        );
+        return isDuplicate ? prev : [...prev, response];
+      });
 
       // Check for links in the message
       const urlRegex = /(https?:\/\/[^\s]+)/g;
       if (urlRegex.test(newMessage)) {
         const linksData = await getSharedLinks(selectedChat._id);
-        setSharedLinks(linksData);
+        setSharedLinks(prev => {
+          const newLinks = linksData.filter(newLink =>
+            !prev.some(existingLink => existingLink.url === newLink.url)
+          );
+          return [...prev, ...newLinks];
+        });
       }
+
+      setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
       setError('Failed to send message');
@@ -235,15 +249,28 @@ const VVerse = () => {
       const formData = new FormData();
       formData.append('file', file);
       const response = await uploadFile(selectedChat._id, formData);
-      setMessages(prev => [...prev, response]);
 
-      // Refresh shared media/files lists
-      if (response.mediaType === 'image' || response.mediaType === 'video') {
-        const mediaData = await getSharedMedia(selectedChat._id);
-        setSharedMedia(mediaData);
-      } else {
-        const filesData = await getSharedFiles(selectedChat._id);
-        setSharedFiles(filesData);
+      // Add the new message without duplicating
+      setMessages(prev => {
+        const isDuplicate = prev.some(msg =>
+          msg.content === response.content &&
+          msg.mediaUrl === response.mediaUrl &&
+          Math.abs(new Date(msg.timestamp).getTime() - new Date(response.timestamp).getTime()) < 1000
+        );
+        return isDuplicate ? prev : [...prev, response];
+      });
+
+      // Always refresh both media and files lists
+      const [mediaData, filesData] = await Promise.all([
+        getSharedMedia(selectedChat._id),
+        getSharedFiles(selectedChat._id)
+      ]);
+      setSharedMedia(mediaData);
+      setSharedFiles(filesData);
+
+      // Clear the file input
+      if (event.target.value) {
+        event.target.value = '';
       }
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -265,9 +292,26 @@ const VVerse = () => {
 
     try {
       const response = await sendMessage(selectedChat._id, linkInput);
-      setMessages(prev => [...prev, response]);
+
+      // Add message without duplicating
+      setMessages(prev => {
+        const isDuplicate = prev.some(msg =>
+          msg.content === response.content &&
+          Math.abs(new Date(msg.timestamp).getTime() - new Date(response.timestamp).getTime()) < 1000
+        );
+        return isDuplicate ? prev : [...prev, response];
+      });
+
+      // Refresh shared links
       const linksData = await getSharedLinks(selectedChat._id);
-      setSharedLinks(linksData);
+      setSharedLinks(prev => {
+        // Filter out any existing links with the same URL to prevent duplicates
+        const newLinks = linksData.filter(newLink =>
+          !prev.some(existingLink => existingLink.url === newLink.url)
+        );
+        return [...prev, ...newLinks];
+      });
+
       setLinkInput('');
       setShowLinkDialog(false);
     } catch (error) {
@@ -278,7 +322,10 @@ const VVerse = () => {
 
   // Initialize socket connection
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io('http://localhost:5000', {
+      withCredentials: true,
+      transports: ['polling', 'websocket']
+    });
     setSocket(newSocket);
 
     return () => {
@@ -290,15 +337,46 @@ const VVerse = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('new-message', (message) => {
-      setMessages(prev => [...prev, message]);
+    socket.on('new-message', async (message) => {
+      // Add message without duplicating
+      setMessages(prev => {
+        const isDuplicate = prev.some(msg =>
+          msg.content === message.content &&
+          msg.mediaUrl === message.mediaUrl &&
+          Math.abs(new Date(msg.timestamp).getTime() - new Date(message.timestamp).getTime()) < 1000
+        );
+        return isDuplicate ? prev : [...prev, message];
+      });
+
+      if (selectedChat) {
+        // Check if message contains a link
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const hasLink = urlRegex.test(message.content);
+
+        // Refresh all lists to ensure everything is up to date
+        const [mediaData, filesData, linksData] = await Promise.all([
+          getSharedMedia(selectedChat._id),
+          getSharedFiles(selectedChat._id),
+          getSharedLinks(selectedChat._id)
+        ]);
+
+        setSharedMedia(mediaData);
+        setSharedFiles(filesData);
+        setSharedLinks(prev => {
+          const newLinks = linksData.filter(newLink =>
+            !prev.some(existingLink => existingLink.url === newLink.url)
+          );
+          return [...prev, ...newLinks];
+        });
+      }
+
       scrollToBottom();
     });
 
     return () => {
       socket.off('new-message');
     };
-  }, [socket]);
+  }, [socket, selectedChat]);
 
   // Join chat room when chat is selected
   useEffect(() => {
@@ -424,40 +502,45 @@ const VVerse = () => {
                 className={`flex ${message.sender._id === user?._id ? 'justify-end' : 'justify-start'} mb-4`}
               >
                 {message.sender._id !== user?._id && (
-                  <Avatar className="w-8 h-8 mr-2">
+                  <Avatar className="w-8 h-8 mr-2 flex-shrink-0">
                     <AvatarImage src={message.sender.avatar} />
                     <AvatarFallback>{message.sender.name[0]}</AvatarFallback>
                   </Avatar>
                 )}
                 <div
-                  className={`max-w-[70%] rounded-lg p-3 ${
+                  className={`max-w-[70%] rounded-lg p-3 break-words ${
                     message.sender._id === user?._id
                       ? 'bg-blue-600 text-white ml-2 rounded-br-none'
                       : 'bg-gray-100 text-gray-900 mr-2 rounded-bl-none'
                   }`}
+                  style={{ minWidth: '100px', maxWidth: '500px' }}
                 >
                   {message.mediaUrl ? (
                     message.mediaType === 'image' ? (
-                      <img
-                        src={`http://localhost:5000${message.mediaUrl}`}
-                        alt="Shared image"
-                        className="max-w-full rounded-lg mb-2"
-                        loading="lazy"
-                      />
+                      <div className="mb-2">
+                        <img
+                          src={`http://localhost:5000${message.mediaUrl}`}
+                          alt="Shared image"
+                          className="max-w-full rounded-lg"
+                          loading="lazy"
+                        />
+                      </div>
                     ) : message.mediaType === 'video' ? (
-                      <video
-                        src={`http://localhost:5000${message.mediaUrl}`}
-                        controls
-                        className="max-w-full rounded-lg mb-2"
-                      />
+                      <div className="mb-2">
+                        <video
+                          src={`http://localhost:5000${message.mediaUrl}`}
+                          controls
+                          className="max-w-full rounded-lg"
+                        />
+                      </div>
                     ) : (
-                      <div className="flex items-center space-x-2">
-                        <FileText className="h-5 w-5" />
+                      <div className="flex items-center space-x-2 mb-2">
+                        <FileText className="h-5 w-5 flex-shrink-0" />
                         <a
                           href={`http://localhost:5000${message.mediaUrl}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline"
+                          className="underline hover:text-opacity-80 transition-opacity break-all"
                         >
                           {message.content}
                         </a>
@@ -469,16 +552,18 @@ const VVerse = () => {
                         message.content.split(/(https?:\/\/[^\s]+)/).map((part, i) => (
                           part.match(/(https?:\/\/[^\s]+)/) ? (
                             <a
-                              key={i}
+                              key={`${message._id}-url-${i}`}
                               href={part}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`underline ${message.sender._id === user?._id ? 'text-blue-200' : 'text-blue-600'}`}
+                              className={`underline hover:opacity-80 transition-opacity break-all ${
+                                message.sender._id === user?._id ? 'text-blue-200' : 'text-blue-600'
+                              }`}
                             >
                               {part}
                             </a>
                           ) : (
-                            <span key={i}>{part}</span>
+                            <span key={`${message._id}-text-${i}`}>{part}</span>
                           )
                         ))
                       ) : (
@@ -486,20 +571,22 @@ const VVerse = () => {
                       )}
                     </p>
                   )}
-                  <span className={`text-xs mt-1 block ${message.sender._id === user?._id ? 'text-blue-200' : 'text-gray-500'} opacity-70`}>
+                  <span className={`text-xs mt-2 block ${
+                    message.sender._id === user?._id ? 'text-blue-200' : 'text-gray-500'
+                  } opacity-70`}>
                     {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
                 {message.sender._id === user?._id && (
-                  <Avatar className="w-8 h-8 ml-2">
+                  <Avatar className="w-8 h-8 ml-2 flex-shrink-0">
                     <AvatarImage src={message.sender.avatar} />
                     <AvatarFallback>{message.sender.name[0]}</AvatarFallback>
-                    </Avatar>
+                  </Avatar>
                 )}
-                    </div>
+              </div>
             ))}
             <div ref={messageEndRef} />
-                  </div>
+          </div>
 
           {/* Message Input */}
           <div className="p-4 border-t">
@@ -615,24 +702,24 @@ const VVerse = () => {
             </h3>
             <div className="space-y-2">
               {sharedLinks.map((link) => (
-                <div key={link.id} className="flex items-center p-2 hover:bg-gray-50 rounded-lg">
+                <div key={`${selectedChat?._id}-link-${link.id}`} className="flex items-center p-2 hover:bg-gray-50 rounded-lg">
                   <LinkIcon className="h-5 w-5 text-gray-400 mr-2" />
-                <div>
+                  <div className="flex-1 min-w-0">
                     <a
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-medium hover:underline"
+                      className="text-sm font-medium hover:underline block truncate"
                     >
-                      {link.title}
+                      {link.url}
                     </a>
                     <p className="text-xs text-gray-500">
                       {new Date(link.timestamp).toLocaleDateString()}
                     </p>
-                </div>
+                  </div>
                 </div>
               ))}
-              </div>
+            </div>
           </div>
         </div>
       )}

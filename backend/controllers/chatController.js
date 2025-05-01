@@ -147,6 +147,8 @@ const chatController = {
 
             const fileType = req.file.mimetype.startsWith('image/') ? 'image' :
                            req.file.mimetype.startsWith('video/') ? 'video' :
+                           req.file.mimetype.startsWith('application/') ? 'application' :
+                           req.file.mimetype.startsWith('text/') ? 'text' :
                            'document';
 
             const fileUrl = `/uploads/${req.file.filename}`;
@@ -239,7 +241,7 @@ const chatController = {
             }
 
             const files = chat.messages
-                .filter(msg => msg.mediaType === 'application' || msg.mediaType === 'text')
+                .filter(msg => msg.mediaType === 'document' || msg.mediaType === 'application' || msg.mediaType === 'text')
                 .map(msg => ({
                     id: msg._id,
                     name: msg.content,
