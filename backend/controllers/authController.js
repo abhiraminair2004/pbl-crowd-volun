@@ -56,10 +56,17 @@ const authController = {
                 email: savedUser.email
             });
 
-            // No token generation
+            // Generate JWT token
+            const token = jwt.sign(
+                { _id: savedUser._id.toString() },
+                process.env.JWT_SECRET,
+                { expiresIn: '7d' }
+            );
+
             console.log('=== REGISTRATION SUCCESS ===');
             res.status(201).json({
-                user: user.toJSON()
+                user: user.toJSON(),
+                token
             });
         } catch (error) {
             console.error('=== REGISTRATION ERROR ===');
@@ -136,13 +143,20 @@ const authController = {
                 });
             }
 
-            // No token generation
+            // Generate JWT token
+            const token = jwt.sign(
+                { _id: user._id.toString() },
+                process.env.JWT_SECRET,
+                { expiresIn: '7d' }
+            );
+
             console.log('Login successful:', {
                 userId: user._id,
                 email: user.email
             });
             res.json({
-                user: user.toJSON()
+                user: user.toJSON(),
+                token
             });
         } catch (error) {
             console.error('Login error:', {
@@ -195,6 +209,40 @@ const authController = {
             });
 
             res.status(500).json({ message: 'Server error' });
+        }
+    },
+
+    async updateProfile(req, res) {
+        try {
+            console.log('Updating profile for user:', req.user._id);
+            console.log('Update data:', req.body);
+
+            const { name, bio, phone, address } = req.body;
+            const updatedUser = await User.findByIdAndUpdate(
+                req.user._id,
+                { name, bio, phone, address },
+                { new: true, runValidators: true }
+            ).select('-password -tokens');
+
+            if (!updatedUser) {
+                console.log('User not found:', req.user._id);
+                return res.status(404).json({ message: 'User not found.' });
+            }
+
+            console.log('Profile updated successfully:', updatedUser);
+            res.json({ user: updatedUser });
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            if (error.name === 'ValidationError') {
+                return res.status(400).json({
+                    message: 'Validation error',
+                    errors: Object.keys(error.errors).reduce((acc, key) => {
+                        acc[key] = error.errors[key].message;
+                        return acc;
+                    }, {})
+                });
+            }
+            res.status(500).json({ message: 'Failed to update profile', error: error.message });
         }
     }
 };

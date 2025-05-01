@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { z } from "zod";
 
@@ -39,14 +37,14 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setIsSubmitting(true);
-      
+
       // In development, simulate successful password reset request
       if (process.env.NODE_ENV !== 'production') {
         await new Promise(resolve => setTimeout(resolve, 1500));
@@ -54,7 +52,7 @@ const ForgotPassword = () => {
         setIsSubmitted(true);
         return;
       }
-      
+
       // For production: Add actual password reset API call here
       // const response = await requestPasswordReset(email);
       // toast.success("Password reset link sent to your email!");
@@ -69,15 +67,13 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
       <div className="flex-1 bg-cream py-12">
-        <div className="container max-w-md mx-auto px-4">
+        <div className="container max-w-4xl mx-auto px-4">
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold text-primary-dark">Forgot Password</CardTitle>
               <CardDescription>
-                {!isSubmitted 
+                {!isSubmitted
                   ? "Enter your email to receive a password reset link."
                   : "Check your email for instructions to reset your password."}
               </CardDescription>
@@ -98,7 +94,7 @@ const ForgotPassword = () => {
                       <p className="text-sm text-red-500">{error}</p>
                     )}
                   </div>
-                  
+
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? "Sending..." : "Send Reset Link"}
                   </Button>
@@ -106,10 +102,10 @@ const ForgotPassword = () => {
               ) : (
                 <div className="text-center py-4">
                   <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
                       stroke="currentColor"
                       className="w-8 h-8 text-green-600"
                     >
@@ -136,7 +132,7 @@ const ForgotPassword = () => {
           </Card>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

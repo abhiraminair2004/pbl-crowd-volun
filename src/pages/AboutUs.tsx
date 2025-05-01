@@ -1,6 +1,4 @@
-
 import React from "react";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -29,8 +27,6 @@ const AboutUs = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       <div className="flex-1 bg-cream py-12">
         <div className="container mx-auto px-4">
           {/* Hero Section */}

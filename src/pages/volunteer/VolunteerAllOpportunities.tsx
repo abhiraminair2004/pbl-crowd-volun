@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/footer";
 import { getCampaigns } from "@/services/api";
 import { MapPin, Calendar, ArrowRight } from "lucide-react";
 
@@ -27,9 +25,8 @@ const VolunteerAllOpportunities = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <section className="py-16 bg-white flex-1">
-        <div className="container px-4 md:px-6">
+      <div className="flex-1 bg-cream py-12">
+        <div className="container max-w-4xl mx-auto px-4">
           <h2 className="text-3xl font-bold tracking-tighter text-primary-dark mb-8">All Volunteer Opportunities</h2>
           {loading ? (
             <div className="text-center py-10">Loading opportunities...</div>
@@ -89,8 +86,7 @@ const VolunteerAllOpportunities = () => {
             </div>
           )}
         </div>
-      </section>
-      <Footer />
+      </div>
     </div>
   );
 };

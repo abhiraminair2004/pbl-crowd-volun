@@ -34,6 +34,26 @@ const userSchema = new mongoose.Schema({
             message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
         }
     },
+    bio: {
+        type: String,
+        trim: true,
+        maxlength: [500, 'Bio cannot exceed 500 characters']
+    },
+    phone: {
+        type: String,
+        trim: true,
+        validate: {
+            validator: function(v) {
+                return /^\+?[\d\s-]+$/.test(v);
+            },
+            message: props => `${props.value} is not a valid phone number!`
+        }
+    },
+    address: {
+        type: String,
+        trim: true,
+        maxlength: [200, 'Address cannot exceed 200 characters']
+    },
     role: {
         type: String,
         enum: ['user', 'volunteer', 'admin'],
@@ -84,14 +104,14 @@ userSchema.pre('save', async function(next) {
                 email: user.isModified('email')
             }
         });
-        
+
         if (user.isModified('password')) {
             console.log(`Hashing password for user: ${user.email}`);
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(user.password, salt);
             console.log('Password hashed successfully');
         }
-        
+
         console.log('=== PRE-SAVE MIDDLEWARE END ===');
         next();
     } catch (error) {
@@ -110,19 +130,19 @@ userSchema.methods.validatePassword = async function(password) {
     try {
         console.log(`Validating password for user: ${this.email}`);
         const isMatch = await bcrypt.compare(password, this.password);
-        
+
         // Update login attempts
         if (!isMatch) {
             this.loginAttempts += 1;
             console.log(`Failed login attempt for user: ${this.email}. Total attempts: ${this.loginAttempts}`);
-            
+
             // Lock account after 5 failed attempts
             if (this.loginAttempts >= 5) {
                 this.accountLocked = true;
                 this.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // Lock for 30 minutes
                 console.log(`Account locked for user: ${this.email} until ${this.lockUntil}`);
             }
-            
+
             await this.save();
         } else {
             // Reset login attempts on successful login
@@ -132,13 +152,13 @@ userSchema.methods.validatePassword = async function(password) {
                 this.lockUntil = null;
                 await this.save();
             }
-            
+
             // Update last login
             this.lastLogin = new Date();
             await this.save();
             console.log(`Successful login for user: ${this.email}`);
         }
-        
+
         return isMatch;
     } catch (error) {
         console.error('Error validating password:', error);
@@ -155,11 +175,11 @@ userSchema.methods.generateAuthToken = async function() {
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
-        
+
         this.tokens = this.tokens.concat({ token });
         await this.save();
         console.log('Auth token generated successfully');
-        
+
         return token;
     } catch (error) {
         console.error('Error generating auth token:', error);
@@ -192,4 +212,4 @@ userSchema.statics.findByCredentials = async (email, password) => {
 };
 
 const User = mongoose.model('User', userSchema);
-module.exports = User; 
+module.exports = User;

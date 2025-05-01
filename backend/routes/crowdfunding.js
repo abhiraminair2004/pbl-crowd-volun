@@ -21,15 +21,32 @@ router.post('/campaigns', async (req, res) => {
 // Get all campaigns from the smart contract
 router.get('/campaigns', async (req, res) => {
     try {
+        console.log('Fetching campaign count...');
         const count = await crowdfundingService.contract.campaignCount();
+        console.log('Campaign count:', count.toString());
+
+        if (count.toString() === '0') {
+            return res.json([]);
+        }
+
         const campaigns = [];
         for (let i = 1; i <= Number(count); i++) {
-            const details = await crowdfundingService.getCampaignDetails(i);
-            campaigns.push({ id: i, ...details });
+            try {
+                console.log(`Fetching details for campaign ${i}...`);
+                const details = await crowdfundingService.getCampaignDetails(i);
+                campaigns.push({ id: i, ...details });
+            } catch (err) {
+                console.error(`Error fetching campaign ${i}:`, err);
+                // Continue with other campaigns even if one fails
+            }
         }
         res.json(campaigns);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error in /campaigns route:', error);
+        res.status(500).json({
+            error: error.message,
+            details: error.stack
+        });
     }
 });
 

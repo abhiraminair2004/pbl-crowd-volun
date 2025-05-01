@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { MapPin, Calendar, Users, ArrowLeft } from "lucide-react";
 import ShareDialog from "@/components/volunteer/ShareDialog";
@@ -28,12 +27,11 @@ const VolunteerOpportunity = () => {
     if (id) fetchOpportunity();
   }, [id]);
 
-  if (loading) return <div className="min-h-screen flex flex-col"><Navbar /><div className="flex-1 bg-cream py-12 text-center">Loading...</div><Footer /></div>;
-  if (!opportunity) return <div className="min-h-screen flex flex-col"><Navbar /><div className="flex-1 bg-cream py-12 text-center">Opportunity not found.</div><Footer /></div>;
+  if (loading) return <div className="min-h-screen flex flex-col"><div className="flex-1 bg-cream py-12 text-center">Loading...</div><Footer /></div>;
+  if (!opportunity) return <div className="min-h-screen flex flex-col"><div className="flex-1 bg-cream py-12 text-center">Opportunity not found.</div><Footer /></div>;
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
       <div className="flex-1 bg-cream py-12">
         <div className="container max-w-4xl mx-auto px-4">
           <div className="mb-6">

@@ -1,14 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-primary to-primary-dark text-cream py-20">
         <div className="container mx-auto px-4 text-center">

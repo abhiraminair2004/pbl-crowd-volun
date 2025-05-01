@@ -2,9 +2,16 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -24,6 +31,9 @@ const Navbar = () => {
           </Link>
           {isAuthenticated && (
             <>
+              <Link to="/vverse" className="text-primary-dark hover:text-primary transition-colors">
+                VVerse
+              </Link>
               <Link to="/crowdfunding" className="text-primary-dark hover:text-primary transition-colors">
                 Crowdfunding
               </Link>
@@ -38,9 +48,26 @@ const Navbar = () => {
         </nav>
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
-            <Button onClick={handleLogout} variant="outline">
-              Log Out
-            </Button>
+            <div className="flex items-center gap-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.avatar} alt={user?.name} />
+                      <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ) : (
             <>
               <Button asChild variant="outline" className="hidden md:inline-flex">

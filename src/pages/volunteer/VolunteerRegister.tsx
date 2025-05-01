@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { registerVolunteer } from "@/services/api";
 
@@ -76,7 +75,7 @@ const VolunteerRegister = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.agreeToTerms) {
       toast.error("Please agree to the terms and conditions");
       return;
@@ -84,7 +83,7 @@ const VolunteerRegister = () => {
 
     try {
       setIsSubmitting(true);
-      
+
       // Make the API call
       await registerVolunteer(formData);
       toast.success("Registration successful! We'll be in touch soon.");
@@ -99,10 +98,8 @@ const VolunteerRegister = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
       <div className="flex-1 bg-cream py-12">
-        <div className="container max-w-3xl mx-auto px-4">
+        <div className="container max-w-4xl mx-auto px-4">
           <Card>
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold text-primary-dark">Volunteer Registration</CardTitle>
@@ -123,7 +120,7 @@ const VolunteerRegister = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -135,7 +132,7 @@ const VolunteerRegister = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input
@@ -146,7 +143,7 @@ const VolunteerRegister = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
                     <Input
@@ -158,7 +155,7 @@ const VolunteerRegister = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="skills">Skills</Label>
                   <Select
@@ -176,7 +173,7 @@ const VolunteerRegister = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label>Areas of Interest</Label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 mt-2 gap-3">
@@ -197,7 +194,7 @@ const VolunteerRegister = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="availability">Availability</Label>
                   <Select
@@ -214,7 +211,7 @@ const VolunteerRegister = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="experience">Previous Volunteer Experience (if any)</Label>
                   <Textarea
@@ -225,12 +222,12 @@ const VolunteerRegister = () => {
                     rows={3}
                   />
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="agreeToTerms"
                     checked={formData.agreeToTerms}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setFormData({
                         ...formData,
                         agreeToTerms: checked as boolean,
@@ -247,7 +244,7 @@ const VolunteerRegister = () => {
                     </Link>
                   </label>
                 </div>
-                
+
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? "Submitting..." : "Register as Volunteer"}
                 </Button>
@@ -264,7 +261,7 @@ const VolunteerRegister = () => {
           </Card>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

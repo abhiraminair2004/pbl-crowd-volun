@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { MapPin, Calendar, Users, ArrowLeft, Heart } from "lucide-react";
 import axios from "axios";
@@ -58,7 +57,6 @@ const CampaignDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div>Loading campaign details...</div>
         </div>
@@ -70,7 +68,6 @@ const CampaignDetails = () => {
   if (error || !campaign) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-primary-dark mb-4">Campaign Not Found</h2>
@@ -94,8 +91,6 @@ const CampaignDetails = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       <div className="flex-1 bg-cream py-12">
         <div className="container max-w-4xl mx-auto px-4">
           <div className="mb-8">

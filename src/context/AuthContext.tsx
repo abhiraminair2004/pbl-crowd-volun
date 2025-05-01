@@ -7,6 +7,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (userData: any) => Promise<void>;
   logout: () => void;
+  updateUser: (profileData: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,12 +16,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any | null>(null);
 
-  useEffect(() => {
-    const currentUser = authService.getCurrentUser();
+  const refreshUser = async () => {
+    const currentUser = await authService.getCurrentUser();
     if (currentUser) {
       setIsAuthenticated(true);
       setUser(currentUser);
     }
+  };
+
+  useEffect(() => {
+    refreshUser();
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -41,8 +46,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
+  const updateUser = async (profileData: any) => {
+    try {
+      const response = await authService.updateProfile(profileData);
+      await refreshUser(); // Refresh user data from server
+      return response.user || response;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, register, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

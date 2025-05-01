@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Clock, Users, TrendingUp, Search, Filter, ArrowRight, MapPin, Calendar, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { getCampaigns } from "@/services/api";
 
@@ -33,8 +32,6 @@ const VolunteerPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       {/* Hero Section */}
       <section className="bg-primary py-20">
         <div className="container px-4 md:px-6">

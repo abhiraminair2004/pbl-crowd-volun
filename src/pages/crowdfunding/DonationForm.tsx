@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { makeDonation } from "@/services/api";
 import axios from "axios";
@@ -137,9 +136,25 @@ const DonationForm = () => {
         const newSupporters = dummySupporters + 1;
         setDummyRaised(newRaised);
         setDummySupporters(newSupporters);
-        localStorage.setItem(localKey, JSON.stringify({ raised: newRaised, supporters: newSupporters }));
+
+        // Update localStorage with the new values
+        localStorage.setItem(localKey, JSON.stringify({
+          raised: newRaised,
+          supporters: newSupporters
+        }));
+
+        // Trigger a storage event for other components
+        window.dispatchEvent(new Event('storage'));
+
+        // Update campaign details to reflect new donation
+        setCampaignDetails(prev => ({
+          ...prev,
+          raised: (Number(prev.raised) || 0) + donatedAmountETH,
+          supporters: (Number(prev.supporters) || 0) + 1
+        }));
+
         toast.success("Donation successful! Thank you for your generosity.");
-        setIsSubmitting(false);
+        navigate("/crowdfunding/all"); // Redirect to all campaigns page
         return;
       }
 
@@ -158,31 +173,47 @@ const DonationForm = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div>Loading campaign details...</div>
+        <div className="flex-1 bg-cream py-12">
+          <div className="container max-w-4xl mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="md:col-span-1">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold text-primary-dark">Loading Campaign Details...</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="animate-pulse">
+                      <div className="h-48 bg-gray-200 rounded-md"></div>
+                      <div className="h-4 bg-gray-200 rounded mt-4 w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded mt-2 w-1/2"></div>
+                      <div className="h-2 bg-gray-200 rounded mt-4 w-full"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="md:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold text-primary-dark">Loading Donation Form...</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="animate-pulse space-y-6">
+                      <div className="h-10 bg-gray-200 rounded"></div>
+                      <div className="h-10 bg-gray-200 rounded"></div>
+                      <div className="h-10 bg-gray-200 rounded"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
         </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!campaignDetails) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div>Campaign not found.</div>
-        </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       <div className="flex-1 bg-cream py-12">
         <div className="container max-w-4xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -211,7 +242,7 @@ const DonationForm = () => {
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
                     <div
                       className="bg-secondary h-2.5 rounded-full"
-                      style={{ width: `${Math.min(100, (campaignDetails.raised / campaignDetails.goal) * 100)}%` }}
+                      style={{ width: `${Math.min(100, ((Number(campaignDetails.raised) + dummyRaised) / Number(campaignDetails.goal)) * 100)}%` }}
                     ></div>
                   </div>
 

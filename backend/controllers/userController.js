@@ -1,11 +1,19 @@
 const User = require('../models/User');
 
-// Get all users
+// Get all users (excluding current user)
 exports.getUsers = async (req, res) => {
     try {
-        const users = await User.find();
+        // Get current user's ID from the auth middleware
+        const currentUserId = req.user?._id;
+
+        // Find all users except the current user
+        const users = await User.find({
+            _id: { $ne: currentUserId }
+        }).select('name email avatar bio userType online lastLogin');
+
         res.status(200).json(users);
     } catch (error) {
+        console.error('Error fetching users:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -13,7 +21,9 @@ exports.getUsers = async (req, res) => {
 // Get single user
 exports.getUser = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findById(req.params.id)
+            .select('name email avatar bio userType online lastLogin');
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -62,4 +72,4 @@ exports.deleteUser = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}; 
+};

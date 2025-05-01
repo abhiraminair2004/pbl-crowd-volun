@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import axios from "axios";
@@ -42,10 +40,8 @@ const StartCampaign = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       <div className="flex-1 bg-cream py-12">
-        <div className="container mx-auto px-4">
+        <div className="container max-w-4xl mx-auto px-4">
           <div className="text-center mb-10">
             <h1 className="text-4xl font-bold text-primary-dark mb-4">Start a Campaign</h1>
             <p className="text-xl text-gray-700 max-w-3xl mx-auto">
@@ -169,8 +165,6 @@ const StartCampaign = () => {
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };

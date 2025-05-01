@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Clock, Users, TrendingUp, Search, Filter, ArrowRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import axios from "axios";
 import { toast } from "sonner";
@@ -38,16 +37,35 @@ const AllCampaigns = () => {
   // TODO: Replace this with actual wallet/account logic (e.g., from MetaMask or backend)
   const currentUserAddress = (window.ethereum && window.ethereum.selectedAddress) ? window.ethereum.selectedAddress.toLowerCase() : "";
 
-  useEffect(() => {
-    async function fetchOnChainCampaigns() {
-      try {
-        const res = await axios.get("http://localhost:5000/api/crowdfunding/campaigns");
-        setOnChainCampaigns(res.data);
-      } catch (err) {
-        // Optionally show an error
-      }
+  const fetchOnChainCampaigns = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/crowdfunding/campaigns");
+      setOnChainCampaigns(res.data);
+    } catch (err) {
+      // Optionally show an error
+      console.error("Error fetching campaigns:", err);
     }
+  };
+
+  useEffect(() => {
     fetchOnChainCampaigns();
+  }, []);
+
+  // Add effect to refresh data periodically or when localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      // Refresh campaigns when localStorage changes
+      fetchOnChainCampaigns();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    // Also set up a periodic refresh
+    const refreshInterval = setInterval(fetchOnChainCampaigns, 5000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(refreshInterval);
+    };
   }, []);
 
   const filteredCampaigns = onChainCampaigns.filter(campaign =>
@@ -68,11 +86,20 @@ const AllCampaigns = () => {
       const amountETH = amountINR / ETH_TO_INR;
       if (showDonate.id != null && amountETH > 0) {
         const key = `dummy-donations-campaign-${showDonate.id}`;
-        let prev = { amount: 0, donors: 0 };
-        try { prev = JSON.parse(localStorage.getItem(key) || '{}'); } catch {}
-        const newAmount = prev.amount + amountETH;
-        const newDonors = prev.donors + 1;
-        localStorage.setItem(key, JSON.stringify({ raised: newAmount, supporters: newDonors }));
+        let prev = { raised: 0, supporters: 0 };
+        try {
+          const stored = JSON.parse(localStorage.getItem(key) || '{}');
+          prev = {
+            raised: stored.raised || 0,
+            supporters: stored.supporters || 0
+          };
+        } catch {}
+        const newRaised = prev.raised + amountETH;
+        const newSupporters = prev.supporters + 1;
+        localStorage.setItem(key, JSON.stringify({ raised: newRaised, supporters: newSupporters }));
+
+        // Trigger storage event for other components
+        window.dispatchEvent(new Event('storage'));
       }
 
       setDonateAmount("");
@@ -88,6 +115,9 @@ const AllCampaigns = () => {
       setCurrency("INR");
       setPaymentMethod("card");
       toast.success("Thank you for your (simulated) donation!");
+
+      // Force a refresh of the campaigns
+      fetchOnChainCampaigns();
     }, 1200);
   };
 
@@ -114,8 +144,6 @@ const AllCampaigns = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       {/* Header Section */}
       <section className="bg-secondary py-12">
         <div className="container px-4 md:px-6">
@@ -161,12 +189,20 @@ const AllCampaigns = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCampaigns.map((campaign, index) => {
               const key = `dummy-donations-campaign-${campaign.id}`;
-              let dummy = { amount: 0, donors: 0 };
-              try { dummy = JSON.parse(localStorage.getItem(key) || '{}'); } catch {}
-              const raisedETH = (campaign.raised || 0) + (dummy.amount || 0);
+              let dummy = { raised: 0, supporters: 0 };
+              try {
+                const stored = JSON.parse(localStorage.getItem(key) || '{}');
+                dummy = {
+                  raised: stored.raised || 0,
+                  supporters: stored.supporters || 0
+                };
+              } catch {}
+
+              const raisedETH = (Number(campaign.raised) || 0) + dummy.raised;
               const raisedINR = toINR(raisedETH);
-              const goalINR = toINR(campaign.goal || campaign.targetAmount || 0);
+              const goalINR = toINR(Number(campaign.goal) || Number(campaign.targetAmount) || 0);
               const progress = goalINR > 0 ? ((raisedINR / goalINR) * 100) : 0;
+
               return (
                 <div
                   key={index}
@@ -234,7 +270,7 @@ const AllCampaigns = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-secondary" />
-                        <span>{((campaign.supporters || 0) + (dummy.donors || 0))} supporters</span>
+                        <span>{(Number(campaign.supporters) || 0) + dummy.supporters} supporters</span>
                       </div>
                     </div>
 

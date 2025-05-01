@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { z } from "zod";
 import { useAuth } from '@/context/AuthContext';
@@ -101,8 +100,6 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       <div className="flex-1 bg-cream py-12">
         <div className="container max-w-md mx-auto px-4">
           <Card>

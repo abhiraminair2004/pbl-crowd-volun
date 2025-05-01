@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Clock, Users, TrendingUp, Search, Filter, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import axios from "axios";
 
@@ -39,8 +38,6 @@ const CrowdfundingPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-
       {/* Hero Section */}
       <section className="bg-secondary py-20">
         <div className="container px-4 md:px-6">

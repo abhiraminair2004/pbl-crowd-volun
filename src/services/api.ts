@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api' 
+const API_URL = process.env.NODE_ENV === 'production'
+  ? '/api'
   : 'http://localhost:5000/api';
 
 const api = axios.create({
@@ -14,13 +14,13 @@ const api = axios.create({
 // Add a request interceptor for logging and authorization
 api.interceptors.request.use(function (config) {
   console.log('API Request:', config.method?.toUpperCase(), config.url, config.data);
-  
+
   // Add authorization header if user is logged in
   const token = localStorage.getItem('auth_token');
   if (token && config.headers) {
     config.headers['Authorization'] = `Bearer ${token}`;
   }
-  
+
   return config;
 }, function (error) {
   console.error('API Request Error:', error);
@@ -203,6 +203,101 @@ export const shareOpportunity = async (opportunityId: string, recipientEmail: st
     return response.data;
   } catch (error) {
     console.error('Error sharing opportunity:', error);
+    throw error;
+  }
+};
+
+// Chat APIs
+export const getUsers = async () => {
+  try {
+    const response = await api.get('/users');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+};
+
+export const getMessages = async (chatId: string) => {
+  try {
+    const response = await api.get(`/chats/${chatId}/messages`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    throw error;
+  }
+};
+
+export const sendMessage = async (chatId: string, content: string) => {
+  try {
+    const response = await api.post(`/chats/${chatId}/messages`, { content });
+    return response.data;
+  } catch (error) {
+    console.error('Error sending message:', error);
+    throw error;
+  }
+};
+
+export const getChats = async () => {
+  try {
+    const response = await api.get('/chats');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching chats:', error);
+    throw error;
+  }
+};
+
+export const createChat = async (userId: string) => {
+  try {
+    const response = await api.post('/chats', { userId });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating chat:', error);
+    throw error;
+  }
+};
+
+export const getSharedMedia = async (chatId: string) => {
+  try {
+    const response = await api.get(`/chats/${chatId}/media`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching shared media:', error);
+    throw error;
+  }
+};
+
+export const getSharedFiles = async (chatId: string) => {
+  try {
+    const response = await api.get(`/chats/${chatId}/files`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching shared files:', error);
+    throw error;
+  }
+};
+
+export const getSharedLinks = async (chatId: string) => {
+  try {
+    const response = await api.get(`/chats/${chatId}/links`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching shared links:', error);
+    throw error;
+  }
+};
+
+export const uploadFile = async (chatId: string, formData: FormData) => {
+  try {
+    const response = await api.post(`/chats/${chatId}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error uploading file:', error);
     throw error;
   }
 };

@@ -22,6 +22,9 @@ import StartCampaign from "./pages/crowdfunding/StartCampaign";
 import AllCampaigns from "./pages/crowdfunding/AllCampaigns";
 import CampaignDetails from "./pages/crowdfunding/CampaignDetails";
 import VolunteerAllOpportunities from "./pages/volunteer/VolunteerAllOpportunities";
+import Profile from "./pages/Profile";
+import VVerse from "./pages/VVerse";
+import Navbar from "@/components/navbar";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +36,7 @@ function App() {
         <Sonner />
         <AuthProvider>
           <Router>
+            <Navbar />
             <Routes>
               <Route path="/" element={<Index />} />
 
@@ -44,6 +48,9 @@ function App() {
               {/* Information Routes */}
               <Route path="/terms" element={<TermsConditions />} />
               <Route path="/about" element={<AboutUs />} />
+
+              {/* VVerse Route */}
+              <Route path="/vverse" element={<VVerse />} />
 
               {/* Volunteer Routes */}
               <Route path="/volunteer" element={<VolunteerPage />} />
@@ -59,6 +66,9 @@ function App() {
               <Route path="/crowdfunding/thank-you" element={<DonationThankYou />} />
               <Route path="/crowdfunding/start" element={<StartCampaign />} />
               <Route path="/crowdfunding/all" element={<AllCampaigns />} />
+
+              {/* Profile Route */}
+              <Route path="/profile" element={<Profile />} />
 
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />

@@ -4,7 +4,7 @@ export const authService = {
     async login(email, password) {
         const response = await api.post('/auth/login', { email, password });
         if (response.data.token) {
-            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('auth_token', response.data.token);
         }
         return response.data;
     },
@@ -12,29 +12,33 @@ export const authService = {
     async register(userData) {
         const response = await api.post('/auth/register', userData);
         if (response.data.token) {
-            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('auth_token', response.data.token);
         }
         return response.data;
     },
 
     logout() {
-        localStorage.removeItem('token');
+        localStorage.removeItem('auth_token');
+    },
+
+    async fetchCurrentUser() {
+        try {
+            const response = await api.get('/auth/me');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching current user:', error);
+            return null;
+        }
     },
 
     getCurrentUser() {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('auth_token');
         if (!token) return null;
+        return this.fetchCurrentUser();
+    },
 
-        try {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-
-            return JSON.parse(jsonPayload);
-        } catch (error) {
-            return null;
-        }
+    async updateProfile(profileData) {
+        const response = await api.put('/auth/profile', profileData);
+        return response.data;
     }
 };

@@ -70,6 +70,41 @@
       "artifacts": [
         "Crowdfunding"
       ]
+    },
+    "D:\\verida\\pbl-crowd-volun\\backend\\contracts\\Crowdfunding.sol": {
+      "lastModificationDate": 1746025653735,
+      "contentHash": "42ddd328cb1d0680d97aaf2362785fdb",
+      "sourceName": "contracts/Crowdfunding.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Crowdfunding"
+      ]
     }
   }
 }
