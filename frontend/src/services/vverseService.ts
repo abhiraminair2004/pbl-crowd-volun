@@ -10,44 +10,28 @@ export interface CreatePostData {
 }
 
 const vverseService = {
-  async createPost(data: CreatePostData) {
-    const token = localStorage.getItem('token');
-    const formData = new FormData();
-
-    formData.append('content', data.content);
-    if (data.media) {
-      formData.append('media', data.media);
-    }
-    if (data.location) {
-      formData.append('location', data.location);
-    }
-    if (data.tags && data.tags.length > 0) {
-      formData.append('tags', JSON.stringify(data.tags));
-    }
-
-    const response = await axios.post(`${API_URL}/posts`, formData, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-
-    return response.data;
+  fetchPosts: async () => {
+    return [];
+  },
+  createPost: async (post: any) => {
+    return post;
+  },
+  likePost: async (postId: string) => {
+    return { _id: postId, likes: [] };
+  },
+  addComment: async (postId: string, comment: string) => {
+    return { _id: postId, comments: [{ content: comment }] };
+  },
+  deletePost: async (postId: string) => {
+    return { _id: postId };
+  },
+  updatePost: async (postId: string, post: any) => {
+    return { _id: postId, ...post };
   },
 
   async getFeedPosts(page = 1, limit = 10) {
     const token = localStorage.getItem('token');
     const response = await axios.get(`${API_URL}/feed?page=${page}&limit=${limit}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    return response.data;
-  },
-
-  async likePost(postId: string) {
-    const token = localStorage.getItem('token');
-    const response = await axios.post(`${API_URL}/posts/${postId}/like`, {}, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
