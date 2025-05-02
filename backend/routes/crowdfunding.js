@@ -1,20 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const crowdfundingService = require('../services/crowdfundingService');
+const { upload } = require('../middleware/multer');
 
 // Create a new campaign
-router.post('/campaigns', async (req, res) => {
+router.post('/campaigns', upload.single('image'), async (req, res) => {
     try {
         const { title, description, goal, duration } = req.body;
-        const txHash = await crowdfundingService.createCampaign(
+        const imageUrl = req.file ? `/uploads/campaigns/${req.file.filename}` : null;
+
+        const result = await crowdfundingService.createCampaign(
             title,
             description,
             goal,
-            duration
+            duration,
+            imageUrl // Pass the image URL to the service
         );
-        res.json({ success: true, txHash });
+
+        res.status(201).json(result);
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Error creating campaign:', error);
+        res.status(500).json({
+            error: 'Failed to create campaign',
+            details: error.message
+        });
     }
 });
 

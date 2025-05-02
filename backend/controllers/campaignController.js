@@ -93,7 +93,7 @@ exports.makeDonation = async (req, res) => {
         });
 
         const savedDonation = await donation.save();
-        
+
         // Update campaign's current amount
         campaign.currentAmount += req.body.amount;
         await campaign.save();

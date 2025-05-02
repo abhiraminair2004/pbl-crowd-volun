@@ -9,6 +9,21 @@ const CrowdfundingPage = () => {
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Helper function to check if a campaign is open (not closed)
+  const isCampaignOpen = (campaign) => {
+    // A campaign is considered closed if ANY of these conditions are true
+    const isClosed =
+      campaign.completed ||
+      campaign.status === 'closed' ||
+      campaign.closed === true ||
+      Number(campaign.goal) === 0 ||
+      !campaign.goal || // undefined or null goal
+      (campaign.endDate && new Date(campaign.endDate) < new Date());
+
+    // Return true only if the campaign is NOT closed
+    return !isClosed;
+  };
+
   useEffect(() => {
     async function fetchCampaigns() {
       try {
@@ -164,17 +179,24 @@ const CrowdfundingPage = () => {
               campaigns
                 .filter(
                   campaign =>
-                    (typeof campaign.id === 'number' && campaign.id > 0) ||
+                    // First ensure the campaign has a valid ID
+                    ((typeof campaign.id === 'number' && campaign.id > 0) ||
                     (typeof campaign.id === 'string' && campaign.id !== '0' && campaign.id.length > 0) ||
-                    (typeof campaign._id === 'string' && campaign._id.length > 0)
+                    (typeof campaign._id === 'string' && campaign._id.length > 0)) &&
+                    // Then check if the campaign is open
+                    isCampaignOpen(campaign) &&
+                    // Ensure it has a valid goal (greater than 0)
+                    (campaign.goal && Number(campaign.goal) > 0)
                 )
                 .map((campaign, index) => (
                   <div key={campaign.id || campaign._id || index} className="bg-white rounded-lg shadow-sm p-6 flex flex-col">
-                    <img
-                      src={campaign.image || "/placeholder.svg?height=200&width=300"}
-                      alt={campaign.title}
-                      className="rounded-md mb-4 h-48 object-cover"
-                    />
+                    <div className="relative h-48 w-full overflow-hidden rounded-md">
+                      <img
+                        src={campaign.image ? `http://localhost:5000${campaign.image}` : "/placeholder.svg?height=200&width=300"}
+                        alt={campaign.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <h3 className="text-xl font-bold text-primary-dark mb-2">{campaign.title}</h3>
                     <p className="text-sm text-gray-600 mb-2">{campaign.description}</p>
                     <div className="flex items-center gap-2 text-sm text-primary-dark/70 mb-2">

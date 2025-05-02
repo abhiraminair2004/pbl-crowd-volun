@@ -37,6 +37,21 @@ const AllCampaigns = () => {
   // TODO: Replace this with actual wallet/account logic (e.g., from MetaMask or backend)
   const currentUserAddress = (window.ethereum && window.ethereum.selectedAddress) ? window.ethereum.selectedAddress.toLowerCase() : "";
 
+  // Helper function to check if a campaign is open (not closed)
+  const isCampaignOpen = (campaign) => {
+    // A campaign is considered closed if ANY of these conditions are true
+    const isClosed =
+      campaign.completed ||
+      campaign.status === 'closed' ||
+      campaign.closed === true ||
+      Number(campaign.goal) === 0 ||
+      !campaign.goal || // undefined or null goal
+      (campaign.endDate && new Date(campaign.endDate) < new Date());
+
+    // Return true only if the campaign is NOT closed
+    return !isClosed;
+  };
+
   const fetchOnChainCampaigns = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/crowdfunding/campaigns");
@@ -68,11 +83,26 @@ const AllCampaigns = () => {
     };
   }, []);
 
-  const filteredCampaigns = onChainCampaigns.filter(campaign =>
-    campaign.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (campaign.category || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    campaign.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Apply filtering to campaigns
+  const filteredCampaigns = onChainCampaigns
+    .filter(campaign => {
+      // Check if campaign is closed or invalid
+      const isClosed =
+        campaign.completed ||
+        campaign.status === 'closed' ||
+        Number(campaign.goal) === 0 ||
+        campaign.closed === true ||
+        (campaign.endDate && new Date(campaign.endDate) < new Date()) ||
+        !campaign.goal; // Add check for undefined or null goal
+
+      // Only show campaigns that are NOT closed AND match search criteria
+      return !isClosed && (
+        campaign.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (campaign.category || "")?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        campaign.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    })
+    .filter(campaign => campaign.goal && Number(campaign.goal) > 0); // Additional filter to ensure valid goals
 
   const handleDonate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,12 +255,6 @@ const AllCampaigns = () => {
                         Urgent
                       </div>
                     )}
-                    {/* Closed Badge */}
-                    {(campaign.completed || campaign.status === 'closed' || Number(campaign.goal) === 0) && (
-                      <div className="absolute top-3 right-3 bg-gray-400 text-white text-xs font-medium px-2 py-1 rounded z-20">
-                        Closed
-                      </div>
-                    )}
                     {/* Delete Button: Always show for testing/demo */}
                     <button
                       className="absolute top-3 right-10 bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 z-20"
@@ -241,7 +265,7 @@ const AllCampaigns = () => {
                       <Trash2 className="h-4 w-4" />
                     </button>
                     <img
-                      src={campaign.image || "/placeholder.svg?height=200&width=300"}
+                      src={campaign.image ? `http://localhost:5000${campaign.image}` : "/placeholder.svg?height=200&width=300"}
                       alt={campaign.title}
                       className="object-cover w-full h-full"
                     />
@@ -277,9 +301,8 @@ const AllCampaigns = () => {
                     <Button
                       className="w-full mt-2 bg-secondary hover:bg-secondary-dark text-primary-dark"
                       onClick={() => setShowDonate({ open: true, id: campaign.id, title: campaign.title })}
-                      disabled={campaign.completed || campaign.status === 'closed' || Number(campaign.goal) === 0}
                     >
-                      {campaign.completed || campaign.status === 'closed' || Number(campaign.goal) === 0 ? 'Closed' : 'Donate Now'} <ArrowRight className="ml-2 h-4 w-4" />
+                      Donate Now <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
                 </div>

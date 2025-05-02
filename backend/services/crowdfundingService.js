@@ -1,8 +1,16 @@
 const ethers = require('ethers');
 const Crowdfunding = require('../artifacts/contracts/Crowdfunding.sol/Crowdfunding.json');
+const mongoose = require('mongoose');
+const Campaign = require('../models/Campaign');
+
+let instance = null;
 
 class CrowdfundingService {
     constructor() {
+        if (instance) {
+            return instance;
+        }
+
         try {
             console.log('Initializing CrowdfundingService...');
             console.log('PRIVATE_KEY:', process.env.PRIVATE_KEY ? '***' : 'undefined');
@@ -35,22 +43,41 @@ class CrowdfundingService {
             }).catch(err => {
                 console.error('Error testing contract connection:', err);
             });
+            instance = this;
         } catch (error) {
             console.error('Error initializing CrowdfundingService:', error);
             throw error;
         }
     }
 
-    async createCampaign(title, description, goal, duration) {
+    async createCampaign(title, description, goal, duration, imageUrl) {
         try {
+            // Create campaign on blockchain
             const tx = await this.contract.createCampaign(
                 title,
                 description,
                 ethers.parseEther(goal.toString()),
                 duration
             );
-            await tx.wait();
-            return tx.hash;
+            const receipt = await tx.wait();
+
+            // Create corresponding entry in MongoDB
+            const campaign = new Campaign({
+                title,
+                organization: this.wallet.address,
+                description,
+                goal: parseFloat(goal),
+                deadline: new Date(Date.now() + duration * 1000),
+                category: 'General',
+                raised: 0,
+                image: imageUrl // Add the image URL here
+            });
+            await campaign.save();
+
+            return {
+                transactionHash: tx.hash,
+                campaignId: campaign._id
+            };
         } catch (error) {
             console.error('Error creating campaign:', error);
             throw error;
@@ -84,6 +111,11 @@ class CrowdfundingService {
     async getCampaignDetails(campaignId) {
         try {
             const details = await this.contract.getCampaignDetails(campaignId);
+            const dbCampaign = await Campaign.findOne({
+                title: details[1],
+                description: details[2]
+            });
+
             return {
                 creator: details[0],
                 title: details[1],
@@ -91,7 +123,9 @@ class CrowdfundingService {
                 goal: ethers.formatEther(details[3]),
                 deadline: new Date(Number(details[4]) * 1000),
                 raised: ethers.formatEther(details[5]),
-                completed: details[6]
+                completed: details[6],
+                image: dbCampaign?.image, // Include the image URL in response
+                category: dbCampaign?.category
             };
         } catch (error) {
             console.error('Error getting campaign details:', error);

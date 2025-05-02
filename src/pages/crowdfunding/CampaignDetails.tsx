@@ -112,7 +112,7 @@ const CampaignDetails = () => {
                 <CardContent className="space-y-6">
                   <div className="relative h-64 rounded-md overflow-hidden">
                     <img
-                      src={campaign.image || "/placeholder.svg?height=400&width=600"}
+                      src={campaign.image ? `http://localhost:5000${campaign.image}` : "/placeholder.svg?height=400&width=600"}
                       alt={campaign.title}
                       className="object-cover w-full h-full"
                     />

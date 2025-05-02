@@ -41,8 +41,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files
-app.use('/uploads', express.static(uploadDir));
+// Serve uploaded files - make sure this line exists and is before your routes
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -95,44 +95,17 @@ app.set('io', io);
 
 // Database connection
 console.log('Connecting to MongoDB...');
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/crowdfunding')
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
         console.log('Connected to MongoDB');
-        console.log('Database name:', mongoose.connection.name);
-        console.log('Database host:', mongoose.connection.host);
-        console.log('Database port:', mongoose.connection.port);
+        // Remove the app.listen() call from here
     })
     .catch((error) => {
         console.error('MongoDB connection error:', error);
         process.exit(1);
     });
 
-// Database connection events
-mongoose.connection.on('connected', () => {
-    console.log('Mongoose connected to MongoDB');
-});
-
-mongoose.connection.on('error', (err) => {
-    console.error('Mongoose connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-    console.log('Mongoose disconnected from MongoDB');
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ message: 'File size is too large. Maximum size is 25MB.' });
-        }
-        return res.status(400).json({ message: 'File upload error.' });
-    }
-    res.status(500).json({ message: 'Internal server error', error: err.message });
-});
-
-// Start server
+// Keep only this server.listen() at the bottom
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
